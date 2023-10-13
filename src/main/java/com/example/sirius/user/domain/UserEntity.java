@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "users")
@@ -40,5 +41,15 @@ public class UserEntity {
                 .password(postUserReq.getPassword())
                 .authority(postUserReq.getAuthority())
                 .build();
+    }
+
+    public GetUsersRes toDto() {
+        GetUsersRes getUsersRes = new GetUsersRes();
+        getUsersRes.setId(this.id);
+        getUsersRes.setLogin_id(this.loginId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        getUsersRes.setRegdate(this.regdate.format(formatter));
+        getUsersRes.setAuthority(this.authority);
+        return getUsersRes;
     }
 }

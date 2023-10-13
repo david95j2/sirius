@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -19,12 +20,13 @@ public class UserService {
 
     public BaseResponse getUsers() {
         List<UserEntity> results = userRepository.findAll();
-        return new BaseResponse(ErrorCode.SUCCESS,results);
+        List<GetUsersRes> new_results = results.stream().map(UserEntity::toDto).collect(Collectors.toList());
+        return new BaseResponse(ErrorCode.SUCCESS,new_results);
     }
 
     public BaseResponse getUserByLoginId(String loginId) {
         UserEntity result = userRepository.findByLoginId(loginId).orElseThrow(()->new AppException(ErrorCode.NOT_FOUND));
-        return new BaseResponse(ErrorCode.SUCCESS,result);
+        return new BaseResponse(ErrorCode.SUCCESS,result.toDto());
     }
 
     public BaseResponse postUser(PostUserReq postUserReq) {
@@ -42,7 +44,7 @@ public class UserService {
 
         UserEntity userEntity = UserEntity.from(postUserReq);
         Integer user_id = userRepository.save(userEntity).getId();
-        return new BaseResponse(ErrorCode.CREATED,String.valueOf(user_id)+"번 유저가 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(user_id)+"번 유저가 생성되었습니다.");
     }
 
     public BaseResponse postLogin(PostLoginReq postLoginReq) {
@@ -74,8 +76,7 @@ public class UserService {
         userRepository.findByLoginId(loginId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
         // 비밀번호 확인
-        UserEntity userEntity = userRepository.findByPassword(deleteUserReq.getPassword()).orElseThrow(
-                ()-> new AppException(ErrorCode.INCORRECT));
+        userRepository.findByPassword(deleteUserReq.getPassword()).orElseThrow(()-> new AppException(ErrorCode.INCORRECT));
 
         userRepository.deleteUserByLoginId(loginId);
 

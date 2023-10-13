@@ -11,9 +11,14 @@ import com.example.sirius.exception.ErrorCode;
 import com.example.sirius.user.UserService;
 import com.example.sirius.user.domain.UserEntity;
 import jakarta.validation.Valid;
+
 import lombok.AllArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,7 +26,9 @@ public class DroneService {
     private DroneRepository droneRepository;
     private UserService userService;
     public BaseResponse getDrones(String login_id) {
-        return new BaseResponse(ErrorCode.SUCCESS, droneRepository.findAllByLoginId(login_id));
+        userService.getUserByLoginId(login_id);
+        List<DroneEntity> results = droneRepository.findAll();
+        return new BaseResponse(ErrorCode.SUCCESS, results.stream().map(DroneEntity::toDto).collect(Collectors.toList()));
     }
 
     public BaseResponse getDroneById(Integer drone_id,String login_id) {
