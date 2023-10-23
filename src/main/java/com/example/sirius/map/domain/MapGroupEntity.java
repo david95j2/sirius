@@ -31,4 +31,5 @@ public class MapGroupEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "mapGroupEntity")
     private List<MapEntity> mapEntities;
+
 }

@@ -7,7 +7,10 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
@@ -20,8 +23,14 @@ public abstract class AbstractWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
 
-        for (WebSocketSession sess : session_list) {
-            sess.sendMessage(message);
+        synchronized (session_list) {
+            for (WebSocketSession sess : new ArrayList<>(session_list)) {  // Avoid ConcurrentModificationException
+                if (sess.isOpen()) {
+                    sess.sendMessage(message);
+                } else {
+                    session_list.remove(sess);
+                }
+            }
         }
 
 //        log.info(String.valueOf(session.getUri()));

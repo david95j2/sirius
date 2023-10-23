@@ -1,10 +1,18 @@
 package com.example.sirius.utils;
 
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -13,10 +21,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class SiriusUtils {
@@ -25,10 +37,10 @@ public class SiriusUtils {
             Path fileStorageLocation = Paths.get(filePath).toAbsolutePath().normalize();
             Path targetPath = fileStorageLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(targetPath.toUri());
-            if(resource.exists()) {
+            if (resource.exists()) {
                 return resource;
             } else {
-                throw new RuntimeException("File not found " +filePath+" "+ fileName);
+                throw new RuntimeException("File not found " + filePath + " " + fileName);
             }
         } catch (MalformedURLException ex) {
             throw new RuntimeException("[MalformedURLException Error] File not found " + fileName, ex);
@@ -87,6 +99,8 @@ public class SiriusUtils {
                 return "image/gif";
             case "pcd":
                 return "application/octet-stream";
+            case "json":
+                return "application/json";
             default:
                 return null;
         }
@@ -121,5 +135,33 @@ public class SiriusUtils {
         } else {
             throw new AppException(ErrorCode.FTP_INFO_NOT_FOUND);
         }
+    }
+
+    public static Map<String, String> extractImageMetadata(String filePath) {
+        Map<String, String> metadataMap = new HashMap<>();
+
+        try {
+            File imageFile = new File(filePath);
+            Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
+
+            for (Directory directory : metadata.getDirectories()) {
+                for (Tag tag : directory.getTags()) {
+                    metadataMap.put(tag.getTagName(), tag.getDescription());
+                }
+            }
+        } catch (ImageProcessingException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return metadataMap;
+    }
+
+    public static String joinArrayWithComma(JSONArray array) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < array.length(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(array.getInt(i));
+        }
+        return sb.toString();
     }
 }

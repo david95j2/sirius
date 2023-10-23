@@ -10,6 +10,7 @@ import com.example.sirius.facility.domain.PostThumbnails;
 import com.example.sirius.facility.domain.ThumbnailEntity;
 import com.example.sirius.map.domain.GetMapsRes;
 import com.example.sirius.map.domain.MapEntity;
+import com.example.sirius.map.domain.MapGroupEntity;
 import com.example.sirius.user.UserService;
 import com.example.sirius.utils.SiriusUtils;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -99,6 +100,9 @@ public class MapService {
         } else {
             return -1;
         }
+    }
+    public Integer getMapGroupIdByMapId(Integer mapId) {
+        return mapRepository.findMapGroupIdByMapId(mapId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
     }
 
 }

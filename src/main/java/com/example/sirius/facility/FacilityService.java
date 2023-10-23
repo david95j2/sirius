@@ -46,7 +46,7 @@ public class FacilityService {
         } else { // 장소가 없으면 post
             FacilityEntity facilityEntity = FacilityEntity.from(postFacilityReq,userEntity);
             facilityRepository.save(facilityEntity).getId();
-            return new BaseResponse(ErrorCode.SUCCESS, facilityEntity.toDto());
+            return new BaseResponse(ErrorCode.CREATED, facilityEntity.toDto());
         }
     }
 

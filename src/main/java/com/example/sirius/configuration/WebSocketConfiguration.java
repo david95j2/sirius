@@ -13,16 +13,16 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfiguration implements WebSocketConfigurer {
     private final AbstractWebSocketHandler chatHandler;
-    private final AbstractWebSocketHandler broadcastHandler;
+    private final AbstractWebSocketHandler analysesHandler;
     private final AbstractWebSocketHandler airSDKHandler;
 
     public WebSocketConfiguration(
             @Qualifier("chatWebSocketHandler") AbstractWebSocketHandler chatHandler,
-            @Qualifier("broadcastWebSocketHandler") AbstractWebSocketHandler broadcastHandler,
+            @Qualifier("analysesWebSocketHandler") AbstractWebSocketHandler broadcastHandler,
             @Qualifier("airSDKWebSocketHandler") AbstractWebSocketHandler airSDKHandler
     ) {
         this.chatHandler = chatHandler;
-        this.broadcastHandler = broadcastHandler;
+        this.analysesHandler = broadcastHandler;
         this.airSDKHandler = airSDKHandler;
     }
 
@@ -31,7 +31,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
         registry.addHandler(chatHandler, "/test")
                 .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
                 .setAllowedOrigins("*");
-        registry.addHandler(broadcastHandler, "test/monitoring")
+        registry.addHandler(analysesHandler, "{loginId}/analyses/modify")
                 .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
                 .setAllowedOrigins("*");
         registry.addHandler(airSDKHandler, "{id}/{drone_id}/airsdk/monitor") // id == string , drone_id == integer

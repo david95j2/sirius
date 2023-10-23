@@ -22,6 +22,7 @@ public class FacilityEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+    private String location;
     private String name;
     private Float latitude;
     private Float longitude;

@@ -13,21 +13,21 @@ import java.util.Optional;
 
 public interface MappingWaypointRepository extends JpaRepository<MappingWayPointEntity,Integer> {
 
-    @Query("select w from MappingWayPointEntity w join w.mappingEntity m where m.id=:missionId order by w.seq")
-    List<MappingWayPointEntity> findAllByMissionId(@Param("missionId") Integer missionId);
+    @Query("select w from MappingWayPointEntity w join w.mappingEntity m where m.id=:mappingId order by w.seq")
+    List<MappingWayPointEntity> findAllByMissionId(@Param("mappingId") Integer mappingId);
 
-    @Query("select w from MappingWayPointEntity w join w.mappingEntity m where m.id=:missionId and w.id=:waypointId")
-    Optional<MappingWayPointEntity> findByIdAndMissionId(@Param("waypointId") Integer waypointId, @Param("missionId") Integer missionId);
+    @Query("select w from MappingWayPointEntity w join w.mappingEntity m where m.id=:mappingId and w.id=:waypointId")
+    Optional<MappingWayPointEntity> findByIdAndMissionId(@Param("waypointId") Integer waypointId, @Param("mappingId") Integer mappingId);
 
     @Transactional
     @Modifying
     @Query("update MappingWayPointEntity w set w.seq=w.seq+1 " +
-            "where w.mappingEntity.id=:mission_id and w.seq>=:seq")
-    void incrementSeqGreaterThan(@Param("mission_id") Integer missionId, @Param("seq") Integer seq);
+            "where w.mappingEntity.id=:mappingId and w.seq>=:seq")
+    void incrementSeqGreaterThan(@Param("mappingId") Integer mappingId, @Param("seq") Integer seq);
 
     @Transactional
     @Modifying
     @Query("update MappingWayPointEntity w set w.seq=w.seq-1 " +
-            "where w.mappingEntity.id=:mission_id and w.seq>=:seq")
-    void decrementSeqGreaterThan(@Param("mission_id") Integer missionId, @Param("seq") Integer seq);
+            "where w.mappingEntity.id=:mappingId and w.seq>=:seq")
+    void decrementSeqGreaterThan(@Param("mappingId") Integer mappingId, @Param("seq") Integer seq);
 }

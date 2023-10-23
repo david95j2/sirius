@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 
 java {
     sourceCompatibility = '17'
@@ -38,6 +38,8 @@ dependencies {
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.1'    /* thumbnailator */
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'commons-io:commons-io:2.6'
+    implementation group: 'com.drewnoakes', name: 'metadata-extractor', version: '2.6.2' /* extract image metadata */
+    implementation 'org.json:json:20210307' /* extract json data */
 
     // QueryDSL 설정
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

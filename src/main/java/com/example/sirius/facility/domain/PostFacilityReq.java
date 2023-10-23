@@ -9,6 +9,8 @@ import org.json.simple.JSONObject;
 
 @Getter @Setter
 public class PostFacilityReq {
+    @NotBlank(message = "장소는 필수 입력값입니다. 키가 location인지 확인해주세요.")
+    private String location;
     @NotBlank(message = "이름은 필수 입력값입니다. 키가 name인지 확인해주세요.")
     private String name;
     @NotNull(message = "위도는 필수 입력값입니다. 키가 laititude인지 확인해주세요.")
