@@ -15,15 +15,18 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     private final AbstractWebSocketHandler chatHandler;
     private final AbstractWebSocketHandler analysesHandler;
     private final AbstractWebSocketHandler airSDKHandler;
+    private final AbstractWebSocketHandler segmentationHandler;
 
     public WebSocketConfiguration(
             @Qualifier("chatWebSocketHandler") AbstractWebSocketHandler chatHandler,
             @Qualifier("analysesWebSocketHandler") AbstractWebSocketHandler broadcastHandler,
-            @Qualifier("airSDKWebSocketHandler") AbstractWebSocketHandler airSDKHandler
+            @Qualifier("airSDKWebSocketHandler") AbstractWebSocketHandler airSDKHandler,
+            @Qualifier("segmentationWebSocketHandler") AbstractWebSocketHandler segmentationHandler
     ) {
         this.chatHandler = chatHandler;
         this.analysesHandler = broadcastHandler;
         this.airSDKHandler = airSDKHandler;
+        this.segmentationHandler = segmentationHandler;
     }
 
     @Override
@@ -35,6 +38,9 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
                 .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
                 .setAllowedOrigins("*");
         registry.addHandler(airSDKHandler, "{id}/{drone_id}/airsdk/monitor") // id == string , drone_id == integer
+                .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
+                .setAllowedOrigins("*");
+        registry.addHandler(segmentationHandler, "{loginId}/analyses/segmentations")
                 .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
                 .setAllowedOrigins("*");
     }

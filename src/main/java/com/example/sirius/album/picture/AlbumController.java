@@ -10,6 +10,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -48,6 +49,12 @@ public class AlbumController {
     public BaseResponse getPictures(@PathVariable Integer album_id,
     @RequestParam(required = false) String date, @RequestParam(required = false) Integer time) {
         return albumService.getPictures(album_id, date, time);
+    }
+
+    // URL 수정하자
+    @PostMapping("api/report/maps/missions/{mission_id}/albums/upload")
+    public BaseResponse uploadPictures(@PathVariable Integer mission_id,@RequestParam("files") MultipartFile[] files) {
+        return albumService.uploadPictures(files);
     }
 
     @GetMapping("api/report/maps/missions/albums/pictures/{picture_id}/files")

@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface AnalysisRepository extends JpaRepository<AnalysisEntity,Integer> {
     @Query("select a from AnalysisEntity a join a.albumEntity ab " +
             "where ab.id=:albumId")
-    List<AnalysisEntity> findByAlbumId(@Param("albumId") Integer albumId);
+    List<AnalysisEntity> findAllByAlbumId(@Param("albumId") Integer albumId);
 
     @Query("select a from AnalysisEntity a join a.albumEntity ab " +
             "where a.id=:analysisId and ab.id=:albumId")
@@ -29,4 +29,7 @@ public interface AnalysisRepository extends JpaRepository<AnalysisEntity,Integer
 
     @Query("select s from SegmentationEntity s where s.id=:segmentationId")
     Optional<SegmentationEntity> findSegBySegId(@Param("segmentationId") Integer segmentationId);
+
+    @Query("select a from AnalysisEntity a join a.albumEntity ab where ab.id=:albumId")
+    Optional<AnalysisEntity> findByAlbumId(@Param("albumId") int albumId);
 }

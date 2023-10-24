@@ -31,7 +31,7 @@ public class AnalysisService {
     private AlbumRepository albumRepository;
 
     public BaseResponse getAnalyses(Integer albumId) {
-        List<AnalysisEntity> results = analysisRepository.findByAlbumId(albumId);
+        List<AnalysisEntity> results = analysisRepository.findAllByAlbumId(albumId);
         return new BaseResponse(ErrorCode.SUCCESS, results.stream().map(AnalysisEntity::toDto).collect(Collectors.toList()));
     }
 

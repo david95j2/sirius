@@ -47,6 +47,14 @@ public class AnalysisEntity {
                 .build();
     }
 
+    public static AnalysisEntity from(String aiType, AlbumEntity albumEntity) {
+        return AnalysisEntity.builder()
+                .albumEntity(albumEntity)
+                .status(0)
+                .aiType(aiType)
+                .build();
+    }
+
     public GetAnalysisRes toDto() {
         GetAnalysisRes getAnalysisRes = new GetAnalysisRes();
         getAnalysisRes.setId(this.id);

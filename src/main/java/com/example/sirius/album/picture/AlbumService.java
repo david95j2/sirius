@@ -19,17 +19,22 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -139,5 +144,25 @@ public class AlbumService {
         );
         return SiriusUtils.loadFileAsResource(Paths.get(pictureEntity.getFilePath()).getParent().toString(),
                 Paths.get(pictureEntity.getFilePath()).getFileName().toString());
+    }
+
+    public BaseResponse uploadPictures(MultipartFile[] files) {
+        List<String> fileNames = new ArrayList<>();
+        Arrays.asList(files).stream().forEach(file -> {
+            try {
+                String originalFileName = file.getOriginalFilename();
+                Path filePath = Paths.get("" + File.separator + originalFileName);
+                Files.write(filePath, file.getBytes());
+
+                fileNames.add(originalFileName);
+
+                // DB 업데이트
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        });
+        return new BaseResponse(ErrorCode.CREATED);
     }
 }

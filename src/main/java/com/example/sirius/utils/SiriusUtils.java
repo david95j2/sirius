@@ -27,7 +27,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -163,5 +165,44 @@ public class SiriusUtils {
             sb.append(array.getInt(i));
         }
         return sb.toString();
+    }
+
+    public static void executePythonScript(String pythonPath, String scriptPath, List<String> args, String type, String gpuNum) {
+        List<String> commandList = new ArrayList<>();
+        commandList.add(pythonPath);
+        if (gpuNum != null) {
+            commandList.add(gpuNum);
+        }
+        commandList.add(scriptPath);
+        commandList.addAll(args);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(commandList);
+
+        try {
+            Process process = processBuilder.start();
+            readStream(process.getInputStream(), "Output", false, type);
+            readStream(process.getErrorStream(), "Error", true, type);
+
+            int exitCode = process.waitFor();
+            log.info("[Python "+type+" Program] Exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            log.error("[Python "+type+" Program] Error occurred while executing external process", e);
+        }
+    }
+
+    private static void readStream(InputStream inputStream, String type, boolean isError, String scriptype) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (isError) {
+                    log.error("[Python "+scriptype+" Program] " + type + " message: " + line);
+                } else {
+                    log.info("[Python "+scriptype+" Program] " + type + " message: " + line);
+                }
+            }
+        } catch (IOException e) {
+            log.error("[Python "+scriptype+" Program] Error occurred while reading " + type + " stream", e);
+        }
     }
 }

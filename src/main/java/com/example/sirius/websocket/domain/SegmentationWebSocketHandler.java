@@ -1,0 +1,79 @@
+package com.example.sirius.websocket.domain;
+
+
+import com.example.sirius.album.analysis.AnalysisRepository;
+import com.example.sirius.album.analysis.domain.AnalysisEntity;
+import com.example.sirius.album.analysis.domain.PostAnalysisReq;
+import com.example.sirius.album.picture.AlbumRepository;
+import com.example.sirius.album.picture.PictureRepository;
+import com.example.sirius.album.picture.domain.AlbumEntity;
+import com.example.sirius.album.picture.domain.PictureEntity;
+import com.example.sirius.exception.AppException;
+import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.utils.SiriusUtils;
+import com.example.sirius.websocket.AbstractWebSocketHandler;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.json.JSONObject;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
+@AllArgsConstructor
+@Component("segmentationWebSocketHandler")
+public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
+    private AnalysisRepository analysisRepository;
+    private PictureRepository pictureRepository;
+    private AlbumRepository albumRepository;
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        // client로부터 메세지 받음
+        String payload = message.getPayload();
+        JSONObject jsonObject = new JSONObject(payload);
+
+        // 넘겨받은 albumId에 데이터가 들어있는지 확인
+        PageRequest pageRequest = PageRequest.of(0, 1);
+        PictureEntity pictureEntity = pictureRepository.findByAlbumIdWhereLimitOne(jsonObject.getInt("albumId"), pageRequest).get(0);
+
+        if (pictureEntity == null) {
+            session.sendMessage(new TextMessage("[Error] : Data not found!"));
+            return;
+        }
+
+        // analyses insert
+        // 이미 존재하면 다시 업데이트
+//        AnalysisEntity analysisEntity = analysisRepository.findByAlbumId(jsonObject.getInt("albumId")).orElse(null);
+//        if (albumEntity == null) {
+//
+//        } else { // 있으면 pah
+//
+//        }
+        AlbumEntity albumEntity = albumRepository.findById(jsonObject.getInt("albumId")).orElse(null);
+        AnalysisEntity analysisEntity = AnalysisEntity.from("segmentation",albumEntity);
+        Integer createdNum = analysisRepository.save(analysisEntity).getId();
+
+        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/torchrun";
+        String gpuNum = "--nproc_per_node=6";
+
+        // Run mmseg
+        String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg.py";
+        List<String> args = Arrays.asList("--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py", "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
+                "--srx_dir", Paths.get(pictureEntity.getFilePath()).getParent().toString(), "--srx_suffix", "."+FilenameUtils.getExtension(pictureEntity.getFilePath()));
+        SiriusUtils.executePythonScript(pythonPath, scriptPath, args, "mmseg", gpuNum);
+
+        // Run visualizer.py
+        pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
+        String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
+        List<String> anotherArgs = Arrays.asList("--folder_path", Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
+        SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
+
+        super.handleTextMessage(session, new TextMessage("[Message] Success"));
+    }
+}
