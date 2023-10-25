@@ -28,10 +28,14 @@ public class PatchShapeAndPropertyReq {
     private Float circle_coeffs_y;
     private Float circle_coeffs_radius;
     private Boolean rect_inward;
-    private Float rect_coeffs_xmin;
-    private Float rect_coeffs_ymin;
-    private Float rect_coeffs_xmax;
-    private Float rect_coeffs_ymax;
+    private Float rectCoeffsPoint1X;
+    private Float rectCoeffsPoint1Y;
+    private Float rectCoeffsPoint2X;
+    private Float rectCoeffsPoint2Y;
+    private Float rectCoeffsPoint3X;
+    private Float rectCoeffsPoint3Y;
+    private Float rectCoeffsPoint4X;
+    private Float rectCoeffsPoint4Y;
     private Float rect_coeffs_rot;
     private Boolean bottom_auto;
     private Boolean bottom_whole;

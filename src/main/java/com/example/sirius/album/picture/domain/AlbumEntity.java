@@ -25,10 +25,10 @@ public class AlbumEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    @JsonFormat(pattern = "yyyy-HH-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime regdate;
 
-    @JsonFormat(pattern = "yyyy-HH-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

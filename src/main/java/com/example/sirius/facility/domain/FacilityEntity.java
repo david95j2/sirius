@@ -40,6 +40,7 @@ public class FacilityEntity {
     public static FacilityEntity from(PostFacilityReq postFacilityReq, UserEntity userEntity) {
         return FacilityEntity.builder()
                 .userEntity(userEntity)
+                .location(postFacilityReq.getLocation())
                 .name(postFacilityReq.getName())
                 .latitude(postFacilityReq.getLatitude())
                 .longitude(postFacilityReq.getLongitude())
@@ -49,6 +50,7 @@ public class FacilityEntity {
     public PatchFacilityRes toDto() {
         PatchFacilityRes patchFacilityRes = new PatchFacilityRes();
         patchFacilityRes.setId(this.id);
+        patchFacilityRes.setLocation(this.location);
         patchFacilityRes.setName(this.name);
         patchFacilityRes.setLatitude(this.latitude);
         patchFacilityRes.setLongitude(this.longitude);

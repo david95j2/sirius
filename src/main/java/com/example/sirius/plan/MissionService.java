@@ -10,10 +10,7 @@ import com.example.sirius.map.MapRepository;
 import com.example.sirius.map.MapService;
 import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.map.domain.MapGroupEntity;
-import com.example.sirius.plan.domain.GetMissionRes;
-import com.example.sirius.plan.domain.MissionEntity;
-import com.example.sirius.plan.domain.PatchMissionReq;
-import com.example.sirius.plan.domain.PostMissionReq;
+import com.example.sirius.plan.domain.*;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
@@ -89,7 +86,7 @@ public class MissionService {
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(missionId) + "번 미션이 삭제되었습니다.");
     }
 
-    public BaseResponse startFittingProgram(Integer mapId) {
+    public BaseResponse startFittingProgram(PostFittingReq postFittingReq,Integer mapId) {
         MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         // 분석 시작
@@ -98,7 +95,7 @@ public class MissionService {
         localExecutorService.execute(() -> {
             // 비동기
             ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command("/home/sb/workspace/pcd-manager3/build/fit_area", mapEntity.getMapPath());
+            processBuilder.command("/home/sb/workspace/pcd-manager3/build/fit_area", mapEntity.getMapPath(),postFittingReq.getPort());
 
             try {
                 Process process = processBuilder.start();

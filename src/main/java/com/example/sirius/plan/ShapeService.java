@@ -96,17 +96,29 @@ public class ShapeService {
         if (patchShapeAndPropertyReq.getRect_inward() != null) {
             propertyEntity.setRectInward(patchShapeAndPropertyReq.getRect_inward());
         }
-        if (patchShapeAndPropertyReq.getRect_coeffs_xmin() != null) {
-            propertyEntity.setRectCoeffsXmin(patchShapeAndPropertyReq.getRect_coeffs_xmin());
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint1X() != null) {
+            propertyEntity.setRectCoeffsPoint1X(patchShapeAndPropertyReq.getRectCoeffsPoint1X());
         }
-        if (patchShapeAndPropertyReq.getRect_coeffs_ymin() != null) {
-            propertyEntity.setRectCoeffsYmin(patchShapeAndPropertyReq.getRect_coeffs_ymin());
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint1Y() != null) {
+            propertyEntity.setRectCoeffsPoint1Y(patchShapeAndPropertyReq.getRectCoeffsPoint1Y());
         }
-        if (patchShapeAndPropertyReq.getRect_coeffs_xmax() != null) {
-            propertyEntity.setRectCoeffsXmax(patchShapeAndPropertyReq.getRect_coeffs_xmax());
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint2X() != null) {
+            propertyEntity.setRectCoeffsPoint2X(patchShapeAndPropertyReq.getRectCoeffsPoint2X());
         }
-        if (patchShapeAndPropertyReq.getRect_coeffs_ymax() != null) {
-            propertyEntity.setRectCoeffsYmax(patchShapeAndPropertyReq.getRect_coeffs_ymax());
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint2Y() != null) {
+            propertyEntity.setRectCoeffsPoint2Y(patchShapeAndPropertyReq.getRectCoeffsPoint2Y());
+        }
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint3X() != null) {
+            propertyEntity.setRectCoeffsPoint3X(patchShapeAndPropertyReq.getRectCoeffsPoint3X());
+        }
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint3Y() != null) {
+            propertyEntity.setRectCoeffsPoint3Y(patchShapeAndPropertyReq.getRectCoeffsPoint3Y());
+        }
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint4X() != null) {
+            propertyEntity.setRectCoeffsPoint4X(patchShapeAndPropertyReq.getRectCoeffsPoint4X());
+        }
+        if (patchShapeAndPropertyReq.getRectCoeffsPoint4Y() != null) {
+            propertyEntity.setRectCoeffsPoint4Y(patchShapeAndPropertyReq.getRectCoeffsPoint4Y());
         }
         if (patchShapeAndPropertyReq.getBottom_auto() != null) {
             propertyEntity.setBottomAuto(patchShapeAndPropertyReq.getBottom_auto());
@@ -134,17 +146,25 @@ public class ShapeService {
         switch (request.getShape().toLowerCase()) {
             case "rectangle":
                 checkNotNull(request.getRect_inward(), "rect_inward");
-                checkNotNull(request.getRect_coeffs_xmin(), "rect_coeffs_xmin");
-                checkNotNull(request.getRect_coeffs_ymin(), "rect_coeffs_ymin");
-                checkNotNull(request.getRect_coeffs_xmax(), "rect_coeffs_xmax");
-                checkNotNull(request.getRect_coeffs_ymax(),"rect_coeffs_ymax");
+                checkNotNull(request.getRectCoeffsPoint1X(), "rectCoeffsPoint1X");
+                checkNotNull(request.getRectCoeffsPoint1Y(), "rectCoeffsPoint1Y");
+                checkNotNull(request.getRectCoeffsPoint2X(), "rectCoeffsPoint2X");
+                checkNotNull(request.getRectCoeffsPoint2Y(), "rectCoeffsPoint2Y");
+                checkNotNull(request.getRectCoeffsPoint3X(), "rectCoeffsPoint3X");
+                checkNotNull(request.getRectCoeffsPoint3Y(), "rectCoeffsPoint3Y");
+                checkNotNull(request.getRectCoeffsPoint4X(), "rectCoeffsPoint4X");
+                checkNotNull(request.getRectCoeffsPoint4Y(), "rectCoeffsPoint4Y");
                 checkNotNull(request.getRect_coeffs_rot(), "rect_coeffs_rot");
                 // Assign the values to the entity
                 propertyEntity.setRectInward(request.getRect_inward());
-                propertyEntity.setRectCoeffsXmin(request.getRect_coeffs_xmin());
-                propertyEntity.setRectCoeffsYmin(request.getRect_coeffs_ymin());
-                propertyEntity.setRectCoeffsXmax(request.getRect_coeffs_xmax());
-                propertyEntity.setRectCoeffsYmax(request.getRect_coeffs_ymax());
+                propertyEntity.setRectCoeffsPoint1X(request.getRectCoeffsPoint1X());
+                propertyEntity.setRectCoeffsPoint1Y(request.getRectCoeffsPoint1Y());
+                propertyEntity.setRectCoeffsPoint2X(request.getRectCoeffsPoint2X());
+                propertyEntity.setRectCoeffsPoint2Y(request.getRectCoeffsPoint2Y());
+                propertyEntity.setRectCoeffsPoint3X(request.getRectCoeffsPoint3X());
+                propertyEntity.setRectCoeffsPoint3Y(request.getRectCoeffsPoint3Y());
+                propertyEntity.setRectCoeffsPoint4X(request.getRectCoeffsPoint4X());
+                propertyEntity.setRectCoeffsPoint4Y(request.getRectCoeffsPoint4Y());
                 propertyEntity.setRectCoeffsRot(request.getRect_coeffs_rot());
                 break;
             case "line":

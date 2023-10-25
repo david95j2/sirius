@@ -22,7 +22,11 @@ public class PostFacilityReq {
         PostFacilityReq request = new PostFacilityReq();
 
         if (jsonObject.get("location") != null) {
-            request.setName((String) jsonObject.get("location"));
+            request.setLocation((String) jsonObject.get("location"));
+        }
+
+        if (jsonObject.get("name") != null) {
+            request.setName((String) jsonObject.get("name"));
         }
 
         if (jsonObject.get("latitude") != null) {

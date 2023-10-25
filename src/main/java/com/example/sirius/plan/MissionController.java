@@ -3,6 +3,7 @@ package com.example.sirius.plan;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.mapping.domain.PatchMappingReq;
 import com.example.sirius.plan.domain.PatchMissionReq;
+import com.example.sirius.plan.domain.PostFittingReq;
 import com.example.sirius.plan.domain.PostMissionReq;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -40,7 +41,7 @@ public class MissionController {
     }
 
     @PostMapping("api/report/maps/{map_id}/fitting")
-    public BaseResponse startFittingProgram(@PathVariable Integer map_id) {
-        return missionService.startFittingProgram(map_id);
+    public BaseResponse startFittingProgram(@PathVariable Integer map_id, @Valid @RequestBody PostFittingReq postFittingReq) {
+        return missionService.startFittingProgram(postFittingReq,map_id);
     }
 }

@@ -6,31 +6,35 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-
 import org.json.JSONArray;
-import org.json.simple.JSONObject;
+import org.json.JSONException;
+
+import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SiriusUtils {
@@ -204,5 +208,64 @@ public class SiriusUtils {
         } catch (IOException e) {
             log.error("[Python "+scriptype+" Program] Error occurred while reading " + type + " stream", e);
         }
+    }
+
+    public static List<String> listFilesInDirectoryNIO(String path) throws IOException {
+        return Files.list(Paths.get(path))
+                .filter(Files::isRegularFile)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> listFilesMatchingPattern(String path, String pattern) throws IOException {
+        return Files.list(Paths.get(path))
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().matches(pattern))
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
+    }
+
+    public static JSONObject validateMessageForAlbumId(String payload, WebSocketSession session) throws Exception {
+        JSONObject jsonObject;
+
+        try {
+            jsonObject = new JSONObject(payload);
+        } catch (JSONException e) {
+            session.sendMessage(new TextMessage("[Error] : Invalid JSON format!"));
+            return null;
+        }
+
+        if (!jsonObject.has("albumId")) {
+            session.sendMessage(new TextMessage("[Error] : JSON should have an 'albumId' key!"));
+            return null;
+        }
+
+        return jsonObject;
+    }
+
+    public static JSONObject validateMessageForRemoveIdAndMaskId(String payload, WebSocketSession session) throws Exception {
+        JSONObject jsonObject;
+
+        try {
+            jsonObject = new JSONObject(payload);
+        } catch (JSONException e) {
+            session.sendMessage(new TextMessage("[Error] : Invalid JSON format!"));
+            return null;
+        }
+
+        if (!jsonObject.has("remove_id") || !jsonObject.has("maskId")) {
+            session.sendMessage(new TextMessage("[Error] : JSON should have 'remove_id' and 'maskId' keys!"));
+            return null;
+        }
+
+        JSONArray removeIdArray = jsonObject.optJSONArray("remove_id");
+        if (removeIdArray == null) {
+            session.sendMessage(new TextMessage("[Error] : 'remove_id' value should be an array!"));
+            return null;
+        }
+
+        return jsonObject;
     }
 }

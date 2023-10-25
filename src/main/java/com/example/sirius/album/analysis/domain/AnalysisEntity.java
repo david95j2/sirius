@@ -21,11 +21,14 @@ public class AnalysisEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    @JsonFormat(pattern = "yyyy-HH-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime regdate;
     private Integer status;
     @Column(name = "ai_type")
     private String aiType;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "modify_date")
+    private LocalDateTime modifyDate;
 
     @PrePersist
     public void prePersist() {

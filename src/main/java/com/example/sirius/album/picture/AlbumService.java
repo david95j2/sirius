@@ -1,6 +1,7 @@
 package com.example.sirius.album.picture;
 
 import com.example.sirius.album.analysis.AnalysisRepository;
+import com.example.sirius.album.analysis.SegmentationRepository;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import com.example.sirius.album.picture.domain.*;
 import com.example.sirius.exception.AppException;
@@ -51,6 +52,7 @@ public class AlbumService {
     private AlbumRepository albumRepository;
     private PictureRepository pictureRepository;
     private AnalysisRepository analysisRepository;
+    private SegmentationRepository segmentationRepository;
 
     public BaseResponse getAlbums(Integer missionId) {
         List<AlbumEntity> results = albumRepository.findByMissionId(missionId);
@@ -64,7 +66,7 @@ public class AlbumService {
 
         // 총 균열 개수
         AtomicInteger total_crack_count = new AtomicInteger(0);
-        List<SegmentationEntity> results = analysisRepository.findSegAllByAlbumId(albumId);
+        List<SegmentationEntity> results = segmentationRepository.findSegAllByAlbumId(albumId);
         results.stream().forEach( x -> {
             String[] fileName = FilenameUtils.removeExtension(x.getJsonFilePath()).split("_");
             total_crack_count.addAndGet(Integer.parseInt(fileName[fileName.length - 1]));

@@ -16,7 +16,7 @@ public interface FacilityRepository extends JpaRepository<FacilityEntity,Integer
     @Query("select f from FacilityEntity f join f.userEntity u where u.loginId=:loginId and f.id=:facilityId")
     Optional<FacilityEntity> findByIdAndLoginId(@Param("facilityId") Integer facilityId,@Param("loginId") String loginId);
 
-    @Query("select f from FacilityEntity f join f.userEntity u where f.name=:name and u.loginId=:loginId")
-    Optional<FacilityEntity> findByNameAndLoginId(@Param("name") String name, @Param("loginId") String loginId);
+    @Query("select f from FacilityEntity f join f.userEntity u where f.name=:name and f.location=:location")
+    Optional<FacilityEntity> findByNameAndLoginId(@Param("name") String name, @Param("location") String location);
 
 }

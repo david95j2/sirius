@@ -22,10 +22,7 @@ public class MapEntity {
     private Integer id;
     @Column(name = "map_path")
     private String mapPath;
-    @Column(name = "map_count")
-    private Integer mapCount;
-    @Column(name = "map_area")
-    private Float mapArea;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     @JsonFormat(pattern = "HH:mm:ss")
@@ -43,8 +40,6 @@ public class MapEntity {
                 .mapPath(postMapReq.getFile_path())
                 .date(postMapReq.getDate())
                 .time(postMapReq.getTime())
-                .mapCount(postMapReq.getMap_count())
-                .mapArea(postMapReq.getMap_area())
                 .build();
     }
 }

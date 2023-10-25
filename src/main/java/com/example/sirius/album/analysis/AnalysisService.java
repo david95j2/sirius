@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AnalysisService {
     private AnalysisRepository analysisRepository;
+    private SegmentationRepository segmentationRepository;
     private AlbumRepository albumRepository;
 
     public BaseResponse getAnalyses(Integer albumId) {
@@ -96,17 +97,17 @@ public class AnalysisService {
     }
 
     public BaseResponse getSegmentations(Integer analysisId) {
-        List<SegmentationEntity> results = analysisRepository.findSegAllById(analysisId);
+        List<SegmentationEntity> results = segmentationRepository.findSegAllById(analysisId);
         return new BaseResponse(ErrorCode.SUCCESS, results.stream().map(SegmentationEntity::toDto).collect(Collectors.toList()));
     }
 
     public BaseResponse getSegmentation(Integer analysisId, Integer segmentationId) {
-        SegmentationEntity segmentationEntity = analysisRepository.findSegByIdAndSegId(analysisId, segmentationId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        SegmentationEntity segmentationEntity = segmentationRepository.findSegByIdAndSegId(analysisId, segmentationId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
         return new BaseResponse(ErrorCode.SUCCESS, segmentationEntity.toDto());
     }
 
     public Resource getSegmentationFile(Integer segmentationId, String type) {
-        SegmentationEntity segmentationEntity = analysisRepository.findSegBySegId(segmentationId).orElse(null);
+        SegmentationEntity segmentationEntity = segmentationRepository.findSegBySegId(segmentationId).orElse(null);
         if (segmentationEntity == null) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }

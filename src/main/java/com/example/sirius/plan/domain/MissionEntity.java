@@ -22,7 +22,7 @@ public class MissionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
-    @JsonFormat(pattern = "yyyy-HH-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime regdate;
     @Column(name = "group_num")
     private Integer groupNum;

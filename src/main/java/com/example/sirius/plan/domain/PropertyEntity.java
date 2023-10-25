@@ -31,14 +31,22 @@ public class PropertyEntity {
     private Float circleCoeffsRadius;
     @Column(name = "rect_inward")
     private Boolean rectInward;
-    @Column(name = "rect_coeffs_xmin")
-    private Float rectCoeffsXmin;
-    @Column(name = "rect_coeffs_ymin")
-    private Float rectCoeffsYmin;
-    @Column(name = "rect_coeffs_xmax")
-    private Float rectCoeffsXmax;
-    @Column(name = "rect_coeffs_ymax")
-    private Float rectCoeffsYmax;
+    @Column(name = "rect_coeffs_point1_x")
+    private Float rectCoeffsPoint1X;
+    @Column(name = "rect_coeffs_point1_y")
+    private Float rectCoeffsPoint1Y;
+    @Column(name = "rect_coeffs_point2_x")
+    private Float rectCoeffsPoint2X;
+    @Column(name = "rect_coeffs_point2_y")
+    private Float rectCoeffsPoint2Y;
+    @Column(name = "rect_coeffs_point3_x")
+    private Float rectCoeffsPoint3X;
+    @Column(name = "rect_coeffs_point3_y")
+    private Float rectCoeffsPoint3Y;
+    @Column(name = "rect_coeffs_point4_x")
+    private Float rectCoeffsPoint4X;
+    @Column(name = "rect_coeffs_point4_y")
+    private Float rectCoeffsPoint4Y;
     @Column(name = "rect_coeffs_rot")
     private Float rectCoeffsRot;
     @Column(name = "bottom_auto")
@@ -62,10 +70,14 @@ public class PropertyEntity {
                 .circleCoeffsY(postPropertyReq.getCircleCoeffsY())
                 .circleCoeffsRadius(postPropertyReq.getCircleCoeffsRadius())
                 .rectInward(postPropertyReq.getRectInward())
-                .rectCoeffsXmin(postPropertyReq.getRectCoeffsXmin())
-                .rectCoeffsYmin(postPropertyReq.getRectCoeffsYmin())
-                .rectCoeffsXmax(postPropertyReq.getRectCoeffsXmax())
-                .rectCoeffsYmax(postPropertyReq.getRectCoeffsYmax())
+                .rectCoeffsPoint1X(postPropertyReq.getRectCoeffsPoint1X())
+                .rectCoeffsPoint1Y(postPropertyReq.getRectCoeffsPoint1Y())
+                .rectCoeffsPoint2X(postPropertyReq.getRectCoeffsPoint2X())
+                .rectCoeffsPoint2Y(postPropertyReq.getRectCoeffsPoint2Y())
+                .rectCoeffsPoint3X(postPropertyReq.getRectCoeffsPoint3X())
+                .rectCoeffsPoint3Y(postPropertyReq.getRectCoeffsPoint3Y())
+                .rectCoeffsPoint4X(postPropertyReq.getRectCoeffsPoint4X())
+                .rectCoeffsPoint4Y(postPropertyReq.getRectCoeffsPoint4Y())
                 .rectCoeffsRot(postPropertyReq.getRectCoeffsRot())
                 .bottomAuto(postPropertyReq.getBottomAuto())
                 .bottomWhole(postPropertyReq.getBottomWhole())
@@ -95,10 +107,14 @@ public class PropertyEntity {
         GetPropertyRectRes getPropertyRectRes = new GetPropertyRectRes();
         getPropertyRectRes.setId(this.id);
         getPropertyRectRes.setRectInward(this.rectInward);
-        getPropertyRectRes.setRectCoeffsXmin(this.rectCoeffsXmin);
-        getPropertyRectRes.setRectCoeffsYmin(this.rectCoeffsYmin);
-        getPropertyRectRes.setRectCoeffsXmax(this.rectCoeffsXmax);
-        getPropertyRectRes.setRectCoeffsYmax(this.rectCoeffsYmax);
+        getPropertyRectRes.setRectCoeffsPoint1X(this.rectCoeffsPoint1X);
+        getPropertyRectRes.setRectCoeffsPoint1Y(this.rectCoeffsPoint1Y);
+        getPropertyRectRes.setRectCoeffsPoint2X(this.rectCoeffsPoint2X);
+        getPropertyRectRes.setRectCoeffsPoint2Y(this.rectCoeffsPoint2Y);
+        getPropertyRectRes.setRectCoeffsPoint3X(this.rectCoeffsPoint3X);
+        getPropertyRectRes.setRectCoeffsPoint3Y(this.rectCoeffsPoint3Y);
+        getPropertyRectRes.setRectCoeffsPoint4X(this.rectCoeffsPoint4X);
+        getPropertyRectRes.setRectCoeffsPoint4Y(this.rectCoeffsPoint4Y);
         getPropertyRectRes.setRectCoeffsRot(this.rectCoeffsRot);
         return getPropertyRectRes;
     }

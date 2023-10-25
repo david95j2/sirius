@@ -2,6 +2,7 @@ package com.example.sirius.websocket.domain;
 
 
 import com.example.sirius.album.analysis.AnalysisRepository;
+import com.example.sirius.album.analysis.SegmentationRepository;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import com.example.sirius.album.picture.PictureRepository;
 import com.example.sirius.album.picture.domain.PictureEntity;
@@ -30,7 +31,7 @@ import java.util.concurrent.Executors;
 @AllArgsConstructor
 @Slf4j
 public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
-    private AnalysisRepository analysisRepository;
+    private SegmentationRepository segmentationRepository;
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -40,7 +41,7 @@ public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
         JSONArray removeIdArray = jsonObject.getJSONArray("remove_id");
         String removeIdString = SiriusUtils.joinArrayWithComma(removeIdArray);
 
-        SegmentationEntity segmentationEntity = analysisRepository.findSegBySegId(jsonObject.getInt("maskId")).orElse(null);
+        SegmentationEntity segmentationEntity = segmentationRepository.findSegBySegId(jsonObject.getInt("maskId")).orElse(null);
         if (segmentationEntity == null) {
             session.sendMessage(new TextMessage("[Error] : Data not found!"));
             return;

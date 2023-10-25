@@ -30,6 +30,15 @@ public class SegmentationEntity {
     @JoinColumn(name = "analysis_id")
     private AnalysisEntity analysisEntity;
 
+    public static SegmentationEntity from(String jsonName, String drawName, String maskName, AnalysisEntity analysisEntity) {
+        return SegmentationEntity.builder()
+                .analysisEntity(analysisEntity)
+                .jsonFilePath(jsonName)
+                .maskFilePath(maskName)
+                .drawFilePath(drawName)
+                .build();
+    }
+
     public GetSegmentationRes toDto() {
         GetSegmentationRes getSegmentationRes = new GetSegmentationRes();
         getSegmentationRes.setId(this.id);

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class FacilityService {
     private FacilityRepository facilityRepository;
     private UserService userService;
+    private UserRepository userRepository;
     public BaseResponse getFacilities(String loginId) {
         userService.getUserByLoginId(loginId);
         List<FacilityEntity> result = facilityRepository.findAll();
@@ -35,8 +36,8 @@ public class FacilityService {
     }
 
     public BaseResponse postFacility(PostFacilityReq postFacilityReq, String loginId) {
-        UserEntity userEntity = (UserEntity) userService.getUserByLoginId(loginId).getResult();
-        FacilityEntity comparedName = facilityRepository.findByNameAndLoginId(postFacilityReq.getName(),loginId).orElse(null);
+        UserEntity userEntity = userRepository.findByLoginId(loginId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        FacilityEntity comparedName = facilityRepository.findByNameAndLoginId(postFacilityReq.getName(), postFacilityReq.getLocation()).orElse(null);
 
         if (comparedName != null) {
             PatchFacilityReq patchFacilityReq = new PatchFacilityReq();
