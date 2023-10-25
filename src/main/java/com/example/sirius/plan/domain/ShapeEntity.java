@@ -33,6 +33,8 @@ public class ShapeEntity {
     private Float lowerHeight;
     @Column(name = "upper_height")
     private Float upperHegiht;
+    @Column(name = "group_num")
+    private Integer groupNum;
 
     @JsonBackReference
     @ManyToOne
@@ -48,6 +50,7 @@ public class ShapeEntity {
         return ShapeEntity.builder()
                 .missionEntity(missionEntity)
                 .shape(postShapeAndPropertyReq.getShape())
+                .groupNum(postShapeAndPropertyReq.getGroup_num())
                 .fromWall(postShapeAndPropertyReq.getFrom_wall())
                 .intervalValue(postShapeAndPropertyReq.getInterval_value())
                 .circleRotate(postShapeAndPropertyReq.getCircle_rotate())
@@ -63,6 +66,7 @@ public class ShapeEntity {
         GetShapeRes getShapeRes = new GetShapeRes();
         getShapeRes.setId(this.id);
         getShapeRes.setShape(this.shape);
+        getShapeRes.setGroup_num(this.groupNum);
         getShapeRes.setFrom_wall(this.fromWall);
         getShapeRes.setInterval_value(this.intervalValue);
         getShapeRes.setCircle_rotate(this.circleRotate);

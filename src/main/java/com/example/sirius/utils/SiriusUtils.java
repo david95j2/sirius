@@ -10,6 +10,9 @@ import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -171,7 +174,7 @@ public class SiriusUtils {
         return sb.toString();
     }
 
-    public static void executePythonScript(String pythonPath, String scriptPath, List<String> args, String type, String gpuNum) {
+    public static String executePythonScript(String pythonPath, String scriptPath, List<String> args, String type, String gpuNum) {
         List<String> commandList = new ArrayList<>();
         commandList.add(pythonPath);
         if (gpuNum != null) {
@@ -181,18 +184,27 @@ public class SiriusUtils {
         commandList.addAll(args);
 
         ProcessBuilder processBuilder = new ProcessBuilder(commandList);
-
+        StringBuilder output = new StringBuilder();
         try {
             Process process = processBuilder.start();
-            readStream(process.getInputStream(), "Output", false, type);
+            if (type.equals("modifier.py")) {
+                String line;
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
+                    }
+                }
+            } else {
+                readStream(process.getInputStream(), "Output", false, type);
+            }
             readStream(process.getErrorStream(), "Error", true, type);
-
             int exitCode = process.waitFor();
             log.info("[Python "+type+" Program] Exited with code: " + exitCode);
 
         } catch (IOException | InterruptedException e) {
             log.error("[Python "+type+" Program] Error occurred while executing external process", e);
         }
+        return output.toString();
     }
 
     private static void readStream(InputStream inputStream, String type, boolean isError, String scriptype) {
@@ -267,5 +279,22 @@ public class SiriusUtils {
         }
 
         return jsonObject;
+    }
+
+    public static void makeFolder(File folder_path) {
+
+        if (!folder_path.exists()) { // 폴더 없으면
+            try {
+                folder_path.mkdirs();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    public static double[] quaternionToEuler(double q0, double q1, double q2, double q3) {
+        Rotation rotation = new Rotation(q0, q1, q2, q3, true);
+        double[] euler = rotation.getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
+        return euler;
     }
 }

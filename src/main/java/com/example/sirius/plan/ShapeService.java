@@ -45,6 +45,9 @@ public class ShapeService {
         if (patchShapeAndPropertyReq.getShape() != null) {
             shapeEntity.setShape(patchShapeAndPropertyReq.getShape());
         }
+        if (patchShapeAndPropertyReq.getGroup_num() != null) {
+            shapeEntity.setGroupNum(patchShapeAndPropertyReq.getGroup_num());
+        }
         if (patchShapeAndPropertyReq.getFrom_wall() != null) {
             shapeEntity.setFromWall(patchShapeAndPropertyReq.getFrom_wall());
         }

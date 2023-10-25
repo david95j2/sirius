@@ -10,6 +10,7 @@ import lombok.Setter;
 public class PatchShapeAndPropertyReq {
     /* ShapeEntity 변경을 위한 값들 */
     private String shape;
+    private Integer group_num;
     private Float from_wall;
     private Float interval_value;
     private Float circle_rotate;

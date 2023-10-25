@@ -37,7 +37,9 @@ public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         // Analyses 관련 로직
         String payload = message.getPayload();
-        JSONObject jsonObject = new JSONObject(payload);
+        JSONObject jsonObject = SiriusUtils.validateMessageForRemoveIdAndMaskId(payload,session);
+        if (jsonObject == null) return;
+
         JSONArray removeIdArray = jsonObject.getJSONArray("remove_id");
         String removeIdString = SiriusUtils.joinArrayWithComma(removeIdArray);
 
@@ -52,15 +54,15 @@ public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
         // Run modifier.py
         String scriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/modifier.py";
         List<String> args = Arrays.asList("--remove_id", removeIdString, "--mask_path", segmentationEntity.getMaskFilePath());
-        SiriusUtils.executePythonScript(pythonPath, scriptPath, args,scriptPath.split("/")[scriptPath.split("/").length - 1], null);
+        String modifyResult = SiriusUtils.executePythonScript(pythonPath, scriptPath, args,scriptPath.split("/")[scriptPath.split("/").length - 1], null);
+
+        segmentationEntity.setJsonFilePath(modifyResult.split(" ")[1]);
+        segmentationRepository.save(segmentationEntity);
 
         // Run visualizer.py
         String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
         List<String> anotherArgs = Arrays.asList("--folder_path", FilenameUtils.removeExtension(segmentationEntity.getMaskFilePath()).replace("result/maskImage","origin")+".JPG");
         SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
-
-        // db insert
-
 
         super.handleTextMessage(session, new TextMessage("[Message] Success"));
     }

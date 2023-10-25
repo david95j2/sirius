@@ -26,6 +26,8 @@ public class WaypointEntity {
     private Double yaw;
     private Boolean checked;
     private Boolean completed;
+    @Column(name = "group_num")
+    private Integer groupNum;
 
     @JsonBackReference
     @ManyToOne
@@ -35,6 +37,7 @@ public class WaypointEntity {
     public static WaypointEntity from(PostWaypointReq postWaypointReq, ShapeEntity shapeEntity) {
         return WaypointEntity.builder()
                 .shapeEntity(shapeEntity)
+                .groupNum(postWaypointReq.getGroup_num())
                 .seq(postWaypointReq.getSeq())
                 .posX(postWaypointReq.getPos_x())
                 .posY(postWaypointReq.getPos_y())

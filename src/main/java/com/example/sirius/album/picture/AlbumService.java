@@ -1,16 +1,16 @@
 package com.example.sirius.album.picture;
 
-import com.example.sirius.album.analysis.AnalysisRepository;
 import com.example.sirius.album.analysis.SegmentationRepository;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import com.example.sirius.album.picture.domain.*;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.map.MapRepository;
+import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.plan.MissionRepository;
 import com.example.sirius.plan.domain.MissionEntity;
 import com.example.sirius.utils.SiriusUtils;
-import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
@@ -18,13 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,8 +49,8 @@ public class AlbumService {
     private MissionRepository missionRepository;
     private AlbumRepository albumRepository;
     private PictureRepository pictureRepository;
-    private AnalysisRepository analysisRepository;
     private SegmentationRepository segmentationRepository;
+    private MapRepository mapRepository;
 
     public BaseResponse getAlbums(Integer missionId) {
         List<AlbumEntity> results = albumRepository.findByMissionId(missionId);
@@ -148,23 +146,55 @@ public class AlbumService {
                 Paths.get(pictureEntity.getFilePath()).getFileName().toString());
     }
 
-    public BaseResponse uploadPictures(MultipartFile[] files) {
+    public BaseResponse uploadPictures(MultipartFile[] files, Integer mapId) {
+
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        String root_path = Paths.get(mapEntity.getMapPath()).getParent().toString().replace("pcd","inspection_images");
+        String sub_path = FilenameUtils.removeExtension(files[0].getOriginalFilename());
+        String date  = sub_path.split("_")[0]; // date
+        root_path = root_path+File.separator+date+File.separator+"origin";
+
+        SiriusUtils.makeFolder(new File(root_path));
+
+        Integer missionNum = Integer.valueOf(sub_path.split("_")[sub_path.split("_").length - 1]);
+        MissionEntity missionEntity = missionRepository.findById(missionNum).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        // albums DB insert
+        AlbumEntity albumEntity = AlbumEntity.from(sub_path.split("_")[0]+" "+sub_path.split("_")[1], missionEntity);
+        AlbumEntity create_albumEntity = albumRepository.save(albumEntity);
+
         List<String> fileNames = new ArrayList<>();
+        String final_root_path = root_path;
+
         Arrays.asList(files).stream().forEach(file -> {
             try {
                 String originalFileName = file.getOriginalFilename();
-                Path filePath = Paths.get("" + File.separator + originalFileName);
+                Path filePath = Paths.get(final_root_path + File.separator + originalFileName);
                 Files.write(filePath, file.getBytes());
 
                 fileNames.add(originalFileName);
 
                 // DB 업데이트
+                String[] fileInfo = FilenameUtils.removeExtension(originalFileName).split("_");
+
+                for (String part : fileInfo) {
+                    System.out.println(part);
+                }
+
+                Float posX = Float.valueOf(fileInfo[2]);
+                Float posY = Float.valueOf(fileInfo[3]);
+                Float posZ = Float.valueOf(fileInfo[4]);
+
+                double[] euler = SiriusUtils.quaternionToEuler(Float.valueOf(fileInfo[5]),Float.valueOf(fileInfo[6]),Float.valueOf(fileInfo[7]),Float.valueOf(fileInfo[8]));
+                PictureEntity pictureEntity = PictureEntity.from(filePath.toString(),fileInfo[0],fileInfo[1],posX,posY,posZ,euler[0],euler[1],euler[2],create_albumEntity);
+                pictureRepository.save(pictureEntity);
 
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
         });
-        return new BaseResponse(ErrorCode.CREATED);
+        return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(albumEntity.getId())+"번 앨범이 생성되었습니다.");
     }
 }

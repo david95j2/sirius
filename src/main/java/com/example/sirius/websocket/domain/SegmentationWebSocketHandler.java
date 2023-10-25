@@ -46,6 +46,7 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         // client로부터 메세지 받음
         String payload = message.getPayload();
         JSONObject jsonObject = SiriusUtils.validateMessageForAlbumId(payload,session);
+        if (jsonObject == null) return;
 
         // 넘겨받은 albumId에 데이터가 들어있는지 확인
         PageRequest pageRequest = PageRequest.of(0, 1);

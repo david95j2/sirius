@@ -25,6 +25,8 @@ public class PostShapeAndPropertyReq {
     private Float lower_height;
     @NotNull(message = "upper_hegight는 필수 입력값입니다. 키가 upper_height인지 확인해주세요.")
     private Float upper_height;
+    @NotNull(message = "group_num는 필수 입력값입니다. 키가 group_num인지 확인해주세요.")
+    private Integer group_num;
 
     private Boolean line_auto;
     private String line_direction;

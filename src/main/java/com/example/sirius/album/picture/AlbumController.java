@@ -2,7 +2,9 @@ package com.example.sirius.album.picture;
 
 import com.example.sirius.album.picture.domain.PatchAlbumReq;
 import com.example.sirius.album.picture.domain.PostAlbumReq;
+import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
+import com.example.sirius.exception.ErrorCode;
 import com.example.sirius.utils.SiriusUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -52,9 +55,20 @@ public class AlbumController {
     }
 
     // URL 수정하자
-    @PostMapping("api/report/maps/missions/{mission_id}/albums/upload")
-    public BaseResponse uploadPictures(@PathVariable Integer mission_id,@RequestParam("files") MultipartFile[] files) {
-        return albumService.uploadPictures(files);
+    @PostMapping("api/report/maps/{map_id}/albums/upload")
+    public BaseResponse uploadPictures(@PathVariable Integer map_id,@RequestParam("files") MultipartFile[] files) {
+        for (MultipartFile file : files) {
+            String contentType = file.getContentType();
+            String originalFilename = file.getOriginalFilename().toLowerCase();
+
+            if (!(originalFilename.endsWith(".zip") || originalFilename.endsWith(".tar") || originalFilename.endsWith(".tgz") ||
+                    contentType.equalsIgnoreCase("application/zip") || contentType.equalsIgnoreCase("application/x-tar") ||
+                    contentType.equalsIgnoreCase("application/x-compressed-tar"))) {
+                throw new AppException(ErrorCode.DATA_NOT_ALLOWED);
+            }
+        }
+
+        return albumService.uploadPictures(files,map_id);
     }
 
     @GetMapping("api/report/maps/missions/albums/pictures/{picture_id}/files")

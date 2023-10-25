@@ -50,6 +50,14 @@ public class AlbumEntity {
                 .build();
     }
 
+    public static AlbumEntity from(String regdate, MissionEntity missionEntity) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
+        return AlbumEntity.builder()
+                .missionEntity(missionEntity)
+                .regdate(LocalDateTime.parse(regdate, formatter))
+                .build();
+    }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

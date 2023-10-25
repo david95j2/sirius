@@ -43,6 +43,26 @@ public class PictureEntity {
     @JoinColumn(name = "album_id")
     private AlbumEntity albumEntity;
 
+    public static PictureEntity from(String filePath, String date, String time, Float posX, Float posY, Float posZ, double roll, double pitch, double yaw, AlbumEntity albumEntity) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HHmmss");
+
+        LocalDate parsedDate = LocalDate.parse(date, dateFormatter);
+        LocalTime parsedTime = LocalTime.parse(time, timeFormatter);
+
+        return PictureEntity.builder()
+                .albumEntity(albumEntity)
+                .filePath(filePath)
+                .date(parsedDate)
+                .time(parsedTime)
+                .posX(posX)
+                .posY(posY)
+                .posZ(posZ)
+                .roll((float) roll)
+                .pitch((float) pitch)
+                .yaw((float) yaw)
+                .build();
+    }
 
     public GetPictureRes toDto() {
         GetPictureRes getPictureRes = new GetPictureRes();
