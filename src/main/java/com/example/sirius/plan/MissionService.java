@@ -58,12 +58,16 @@ public class MissionService {
                 ));
     }
 
+    public BaseResponse getMissionOnlyId(Integer missionId) {
+         return new BaseResponse(ErrorCode.SUCCESS,missionRepository.findById(missionId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND)));
+    }
+
     public BaseResponse postMission(PostMissionReq postMissionReq, Integer mapId) {
         MapGroupEntity mapGroupEntity = mapRepository.findMapGroupByMapId(mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         MissionEntity mission = MissionEntity.from(postMissionReq, mapGroupEntity);
         Integer createdNum = missionRepository.save(mission).getId();
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(createdNum) + "번 미션이 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED, createdNum);
     }
 
     public BaseResponse patchMission(PatchMissionReq patchMissionReq, Integer missionId, Integer mapId) {

@@ -293,8 +293,27 @@ public class SiriusUtils {
     }
 
     public static double[] quaternionToEuler(double q0, double q1, double q2, double q3) {
-        Rotation rotation = new Rotation(q0, q1, q2, q3, true);
+        Rotation rotation = new Rotation(q3, q0, q1, q2, true);
+        //Rotation rotation = new Rotation(q0, q1, q2, q3, true);
         double[] euler = rotation.getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
         return euler;
+    }
+
+    public static void saveImageToFile(InputStream imageZipStream, File extractedImage) throws IOException {
+        // FileOutputStream을 이용하여 이미지를 디스크에 저장하기 위한 스트림을 생성.
+        // 이 스트림은 'extractedImage' 파일에 데이터를 쓸 것.
+        try (BufferedOutputStream imageOutputStream = new BufferedOutputStream(new FileOutputStream(extractedImage))) {
+            // 버퍼는 압축 해제된 이미지 데이터를 임시로 저장하기 위함.
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            // 이미지 압축 해제 스트림(imageZipStream)에서 버퍼 크기만큼 데이터를 읽음.
+            // bytesRead는 실제로 읽은 바이트 수를 나타냄.
+            // bytesRead가 -1이면, 스트림의 끝에 도달했음을 의미.
+            while ((bytesRead = imageZipStream.read(buffer)) != -1) {
+                // imageOutputStream을 이용하여 버퍼에 저장된 데이터를 'extractedImage' 파일에 씀.
+                // buffer의 0번째 위치에서 bytesRead만큼의 데이터를 씀.
+                imageOutputStream.write(buffer, 0, bytesRead);
+            }
+        }
     }
 }

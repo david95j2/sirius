@@ -5,9 +5,12 @@ import com.example.sirius.album.picture.domain.PostAlbumReq;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.plan.MissionRepository;
+import com.example.sirius.plan.MissionService;
 import com.example.sirius.utils.SiriusUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AlbumController {
     private AlbumService albumService;
+    private MissionService missionService;
 
     @GetMapping("api/report/maps/missions/{mission_id}/albums")
     public BaseResponse getAlbums(@PathVariable Integer mission_id) {
@@ -59,16 +63,29 @@ public class AlbumController {
     public BaseResponse uploadPictures(@PathVariable Integer map_id,@RequestParam("files") MultipartFile[] files) {
         for (MultipartFile file : files) {
             String contentType = file.getContentType();
-            String originalFilename = file.getOriginalFilename().toLowerCase();
 
-            if (!(originalFilename.endsWith(".zip") || originalFilename.endsWith(".tar") || originalFilename.endsWith(".tgz") ||
-                    contentType.equalsIgnoreCase("application/zip") || contentType.equalsIgnoreCase("application/x-tar") ||
-                    contentType.equalsIgnoreCase("application/x-compressed-tar"))) {
+            // 파일 이름 (확장자 제외) 검사
+            String originalFilename = file.getOriginalFilename().toLowerCase();
+            String baseFilename = originalFilename.contains(".") ?
+                    originalFilename.substring(0, originalFilename.lastIndexOf(".")) :
+                    originalFilename;
+
+            if (!baseFilename.matches("^[1-9][0-9]*$")) {
+                throw new AppException(ErrorCode.INVALID_FILENAME);
+            }
+            missionService.getMissionOnlyId(Integer.valueOf(baseFilename));
+
+            if (originalFilename.endsWith(".zip") || contentType.equalsIgnoreCase("application/zip")) {
+                return albumService.unZip(file, map_id); // Assume zipService is the service that handles .zip files
+            } else if (originalFilename.endsWith(".tar") || originalFilename.endsWith(".tgz") ||
+                    contentType.equalsIgnoreCase("application/x-tar") ||
+                    contentType.equalsIgnoreCase("application/x-compressed-tar")) {
+                return albumService.unTarOrTgzFile(file,map_id); // Assume tarService is the service that handles .tar and .tgz files
+            } else {
                 throw new AppException(ErrorCode.DATA_NOT_ALLOWED);
             }
         }
-
-        return albumService.uploadPictures(files,map_id);
+        return new BaseResponse(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("api/report/maps/missions/albums/pictures/{picture_id}/files")

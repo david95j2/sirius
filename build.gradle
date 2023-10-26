@@ -41,6 +41,7 @@ dependencies {
     implementation group: 'com.drewnoakes', name: 'metadata-extractor', version: '2.6.2' /* extract image metadata */
     implementation 'org.json:json:20210307' /* extract json data */
     implementation 'org.apache.commons:commons-math3:3.6.1' /* quaternion to euler */
+    implementation 'org.apache.commons:commons-compress:1.21' /* unzip */
 
     // QueryDSL 설정
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

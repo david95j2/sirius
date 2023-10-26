@@ -36,7 +36,7 @@ public class ShapeService {
         PropertyEntity propertyEntity = createPropertyFromRequest(postShapeAndPropertyReq, shapeEntity);
         propertyRepository.save(propertyEntity);
 
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(createdNum) + "번 도형이 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED, createdNum);
     }
     @Transactional
     public BaseResponse patchShape(PatchShapeAndPropertyReq patchShapeAndPropertyReq, Integer shapeId, Integer missionId) {
@@ -194,7 +194,7 @@ public class ShapeService {
                 propertyEntity.setBottomAuto(request.getBottom_auto());
                 propertyEntity.setBottomWhole(request.getBottom_whole());
                 break;
-            case "waypoints":
+            case "waypoint":
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_INPUT);
