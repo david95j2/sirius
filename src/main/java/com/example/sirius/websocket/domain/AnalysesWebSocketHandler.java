@@ -67,4 +67,5 @@ public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
         super.handleTextMessage(session, new TextMessage("[Message] Success"));
     }
 
+
 }

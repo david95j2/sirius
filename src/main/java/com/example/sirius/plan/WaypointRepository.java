@@ -29,4 +29,7 @@ public interface WaypointRepository extends JpaRepository<WaypointEntity, Intege
     @Query("update WaypointEntity w set w.seq=w.seq-1 " +
             "where w.shapeEntity.id=:shapeId and w.seq>=:seq")
     void decrementSeqGreaterThan(@Param("shapeId") Integer shapeId, @Param("seq") Integer seq);
+
+    @Query("select w from WaypointEntity w join w.shapeEntity.missionEntity m where m.id=:missionId order by w.seq asc")
+    List<WaypointEntity> findByMissionId(@Param("missionId") Integer missionId);
 }

@@ -56,4 +56,5 @@ public abstract class AbstractWebSocketHandler extends TextWebSocketHandler {
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.error("Error occurred for session: {}", session.getId(), exception);
     }
+
 }

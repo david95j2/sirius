@@ -35,6 +35,7 @@ public class MissionService {
     private MissionRepository missionRepository;
     private MapService mapService;
     private MapRepository mapRepository;
+    private WaypointRepository waypointRepository;
 
     public BaseResponse getMissions(Integer mapId, Integer groupNum) {
         Integer mapGroupId = mapService.getMapGroupIdByMapId(mapId);
@@ -114,5 +115,9 @@ public class MissionService {
 
 
         return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(mapId) + "번 점검 경로 생성을 시작합니다.");
+    }
+
+    public BaseResponse getWaypointsByMissionId(Integer missionId) {
+        return new BaseResponse(ErrorCode.SUCCESS, waypointRepository.findByMissionId(missionId));
     }
 }

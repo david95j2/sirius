@@ -11,10 +11,13 @@ import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.plan.MissionRepository;
 import com.example.sirius.plan.domain.MissionEntity;
 import com.example.sirius.utils.SiriusUtils;
+import com.example.sirius.websocket.domain.SegmentationWebSocketHandler;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -27,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.example.sirius.album.picture.domain.QPictureEntity.pictureEntity;
@@ -57,6 +58,7 @@ public class AlbumService {
     private PictureRepository pictureRepository;
     private SegmentationRepository segmentationRepository;
     private MapRepository mapRepository;
+    private SegmentationWebSocketHandler segmentationWebSocketHandler;
 
     public BaseResponse getAlbums(Integer missionId) {
         List<AlbumEntity> results = albumRepository.findByMissionId(missionId);
@@ -152,67 +154,18 @@ public class AlbumService {
                 Paths.get(pictureEntity.getFilePath()).getFileName().toString());
     }
 
-    public BaseResponse uploadPictures(MultipartFile[] files, Integer mapId) {
-
-        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-        String root_path = Paths.get(mapEntity.getMapPath()).getParent().toString().replace("pcd", "inspection_images");
-
-        String sub_path = FilenameUtils.removeExtension(files[0].getOriginalFilename());
-        String date = sub_path.split("_")[0]; // date
-        root_path = root_path + File.separator + date + File.separator + "origin";
-
-        SiriusUtils.makeFolder(new File(root_path));
-
-        Integer missionNum = Integer.valueOf(sub_path.split("_")[sub_path.split("_").length - 1]);
-        MissionEntity missionEntity = missionRepository.findById(missionNum).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
-
-        // albums DB insert
-        AlbumEntity albumEntity = AlbumEntity.from(sub_path.split("_")[0] + " " + sub_path.split("_")[1], missionEntity);
-        AlbumEntity create_albumEntity = albumRepository.save(albumEntity);
-
-        String final_root_path = root_path;
-
-        Arrays.asList(files).stream().forEach(file -> {
-            try {
-                String originalFileName = file.getOriginalFilename();
-                Path filePath = Paths.get(final_root_path + File.separator + originalFileName);
-                Files.write(filePath, file.getBytes());
-
-
-                // DB 업데이트
-                String[] fileInfo = FilenameUtils.removeExtension(originalFileName).split("_");
-
-                for (String part : fileInfo) {
-                    System.out.println(part);
-                }
-
-                Float posX = Float.valueOf(fileInfo[2]);
-                Float posY = Float.valueOf(fileInfo[3]);
-                Float posZ = Float.valueOf(fileInfo[4]);
-
-                double[] euler = SiriusUtils.quaternionToEuler(Float.valueOf(fileInfo[5]), Float.valueOf(fileInfo[6]), Float.valueOf(fileInfo[7]), Float.valueOf(fileInfo[8]));
-                PictureEntity pictureEntity = PictureEntity.from(filePath.toString(), fileInfo[0], fileInfo[1], posX, posY, posZ, euler[0], euler[1], euler[2], create_albumEntity);
-                pictureRepository.save(pictureEntity);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
-            }
-        });
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(albumEntity.getId()) + "번 앨범이 생성되었습니다.");
-    }
-
-    public BaseResponse unZip(MultipartFile compressedFile, Integer mapId) {
+    private BaseResponse handleFile(MultipartFile file, Integer mapId, Function<InputStream, ArchiveInputStream> streamCreator) {
         MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         String root_path = Paths.get(mapEntity.getMapPath()).getParent().toString().replace("pcd", "inspection_images");
         boolean isFirstEntry = true;
         Integer albumId = null;
-        try (ZipArchiveInputStream imageZipStream  = new ZipArchiveInputStream(compressedFile.getInputStream())) {
-            ZipArchiveEntry imageEntry;
+
+        try (ArchiveInputStream imageStream = streamCreator.apply(file.getInputStream())) {
+            ArchiveEntry imageEntry;
             MissionEntity missionEntity;
             AlbumEntity albumEntity;
             AlbumEntity create_albumEntity = null;
-            while ((imageEntry = imageZipStream.getNextZipEntry()) != null) {
+            while ((imageEntry = imageStream.getNextEntry()) != null) {
 
                 if (imageEntry.isDirectory()) {
                     throw new AppException(ErrorCode.ZIP_NOT_ALLOWED);
@@ -233,12 +186,10 @@ public class AlbumService {
                     isFirstEntry = false;
                 }
 
-
                 File extractedImage = new File(root_path, imageEntry.getName());
-                SiriusUtils.saveImageToFile(imageZipStream,extractedImage);
+                SiriusUtils.saveImageToFile(imageStream,extractedImage);
 
-
-                // DB 업데이트
+                // pictures DB insert
                 String[] fileInfo = FilenameUtils.removeExtension(imageEntry.getName()).split("_");
 
                 Float posX = Float.valueOf(fileInfo[2]);
@@ -253,36 +204,14 @@ public class AlbumService {
             throw new RuntimeException(e);
         }
 
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(albumId) + "번 앨범이 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED, albumId);
+    }
+
+    public BaseResponse unZip(MultipartFile compressedFile, Integer mapId) {
+        return handleFile(compressedFile, mapId, ZipArchiveInputStream::new);
     }
 
     public BaseResponse unTarOrTgzFile(MultipartFile file, Integer mapId) {
-//        File destDir = new File(destinationFolder);
-//        if (!destDir.exists()) {
-//            destDir.mkdir();
-//        }
-//
-//        try (TarArchiveInputStream tais = new TarArchiveInputStream(file.getInputStream())) {
-//            TarArchiveEntry entry;
-//            while ((entry = tais.getNextTarEntry()) != null) {
-//                // 폴더가 포함되어 있는지 확인
-//                if (imageEntry.isDirectory()) {
-//                    throw new AppException(ErrorCode.ZIP_NOT_ALLOWED);
-//                }
-//
-//                File outFile = new File(destDir, entry.getName());
-//                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile))) {
-//                    byte[] buffer = new byte[1024];
-//                    int read;
-//                    while ((read = tais.read(buffer)) != -1) {
-//                        bos.write(buffer, 0, read);
-//                    }
-//                }
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-        return new BaseResponse(ErrorCode.SUCCESS);
-//        return new BaseResponse("Tar/Tgz file processed successfully.");
+        return handleFile(file, mapId, TarArchiveInputStream::new);
     }
 }

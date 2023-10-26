@@ -44,4 +44,9 @@ public class MissionController {
     public BaseResponse startFittingProgram(@PathVariable Integer map_id, @Valid @RequestBody PostFittingReq postFittingReq) {
         return missionService.startFittingProgram(postFittingReq,map_id);
     }
+
+    @GetMapping("api/report/maps/missions/{mission_id}/waypoints")
+    public BaseResponse getWaypointsByMissionId(@PathVariable Integer mission_id) {
+        return missionService.getWaypointsByMissionId(mission_id);
+    }
 }
