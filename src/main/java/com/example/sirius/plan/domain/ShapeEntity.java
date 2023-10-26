@@ -17,6 +17,7 @@ public class ShapeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+    private Integer seq;
     private String shape;
     @Column(name = "from_wall")
     private Float fromWall;
@@ -50,6 +51,7 @@ public class ShapeEntity {
         return ShapeEntity.builder()
                 .missionEntity(missionEntity)
                 .shape(postShapeAndPropertyReq.getShape())
+                .seq(postShapeAndPropertyReq.getSeq())
                 .groupNum(postShapeAndPropertyReq.getGroup_num())
                 .fromWall(postShapeAndPropertyReq.getFrom_wall())
                 .intervalValue(postShapeAndPropertyReq.getInterval_value())
@@ -65,6 +67,7 @@ public class ShapeEntity {
     public GetShapeRes toDto() {
         GetShapeRes getShapeRes = new GetShapeRes();
         getShapeRes.setId(this.id);
+        getShapeRes.setSeq(this.seq);
         getShapeRes.setShape(this.shape);
         getShapeRes.setGroup_num(this.groupNum);
         getShapeRes.setFrom_wall(this.fromWall);

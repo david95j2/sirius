@@ -9,6 +9,8 @@ import lombok.Setter;
 public class PostShapeAndPropertyReq {
     @NotBlank(message = "도형은 필수 입력값입니다. 키가 shape인지 확인해주세요.")
     private String shape;
+    @NotNull(message = "seq은 필수 입력값입니다. 키가 seq인지 확인해주세요.")
+    private Integer seq;
     @NotNull(message = "from_wall은 필수 입력값입니다. 키가 from_wall인지 확인해주세요.")
     private Float from_wall;
     @NotNull(message = "interval_value는 필수 입력값입니다. 키가 interval_value인지 확인해주세요.")

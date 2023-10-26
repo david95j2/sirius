@@ -15,6 +15,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.FilenameUtils;
@@ -255,6 +257,32 @@ public class AlbumService {
     }
 
     public BaseResponse unTarOrTgzFile(MultipartFile file, Integer mapId) {
+//        File destDir = new File(destinationFolder);
+//        if (!destDir.exists()) {
+//            destDir.mkdir();
+//        }
+//
+//        try (TarArchiveInputStream tais = new TarArchiveInputStream(file.getInputStream())) {
+//            TarArchiveEntry entry;
+//            while ((entry = tais.getNextTarEntry()) != null) {
+//                // 폴더가 포함되어 있는지 확인
+//                if (imageEntry.isDirectory()) {
+//                    throw new AppException(ErrorCode.ZIP_NOT_ALLOWED);
+//                }
+//
+//                File outFile = new File(destDir, entry.getName());
+//                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile))) {
+//                    byte[] buffer = new byte[1024];
+//                    int read;
+//                    while ((read = tais.read(buffer)) != -1) {
+//                        bos.write(buffer, 0, read);
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         return new BaseResponse(ErrorCode.SUCCESS);
+//        return new BaseResponse("Tar/Tgz file processed successfully.");
     }
 }

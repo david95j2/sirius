@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WaypointRepository extends JpaRepository<WaypointEntity, Integer> {
-    @Query("select w from WaypointEntity w join w.shapeEntity s where s.id=:shapeId order by w.seq")
+    @Query("select w from WaypointEntity w join w.shapeEntity s where s.id=:shapeId order by w.seq asc ")
     List<WaypointEntity> findAllByShapeId(@Param("shapeId") Integer shapeId);
 
     @Query("select w from WaypointEntity w join w.shapeEntity s where s.id=:shapeId and w.id=:waypointId")

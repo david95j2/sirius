@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ShapeRepository extends JpaRepository<ShapeEntity, Integer> {
     @Query("select s from ShapeEntity s " +
-            "join s.missionEntity m where m.id=:missionId")
+            "join s.missionEntity m where m.id=:missionId order by s.seq asc ")
     List<ShapeEntity> findByMissionId(@Param("missionId") Integer missionId);
 
     @Query("select s from ShapeEntity s " +

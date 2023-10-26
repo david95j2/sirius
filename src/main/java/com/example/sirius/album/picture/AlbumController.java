@@ -70,10 +70,10 @@ public class AlbumController {
                     originalFilename.substring(0, originalFilename.lastIndexOf(".")) :
                     originalFilename;
 
-            if (!baseFilename.matches("^[1-9][0-9]*$")) {
-                throw new AppException(ErrorCode.INVALID_FILENAME);
-            }
-            missionService.getMissionOnlyId(Integer.valueOf(baseFilename));
+//            if (!baseFilename.matches("^[1-9][0-9]*$")) {
+//                throw new AppException(ErrorCode.INVALID_FILENAME);
+//            }
+//            missionService.getMissionOnlyId(Integer.valueOf(baseFilename));
 
             if (originalFilename.endsWith(".zip") || contentType.equalsIgnoreCase("application/zip")) {
                 return albumService.unZip(file, map_id); // Assume zipService is the service that handles .zip files

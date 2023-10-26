@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class GetShapeRes {
     private Integer id;
+    private Integer seq;
     private Integer group_num;
     private String shape;
     private Float from_wall;
