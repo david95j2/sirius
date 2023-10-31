@@ -11,6 +11,7 @@ import com.example.sirius.facility.domain.ThumbnailEntity;
 import com.example.sirius.map.domain.GetMapsRes;
 import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.map.domain.MapGroupEntity;
+import com.example.sirius.map.domain.PostMapReq;
 import com.example.sirius.user.UserService;
 import com.example.sirius.utils.SiriusUtils;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -37,7 +38,7 @@ public class MapService {
     private UserService userService;
     private MapRepository mapRepository;
     private FacilityRepository facilityRepository;
-    private ThumbnailRepository thumbnailRepository;
+    private MapGroupRepository mapGroupRepository;
 
     public BaseResponse getMaps(Integer facilityId, String loginId, String date, Integer time) {
         userService.getUserByLoginId(loginId);
@@ -89,20 +90,35 @@ public class MapService {
                 Path.of(thumbnailEntity.getThumbnailPath()).getFileName().toString());
     }
 
-    public Integer postFacilityThumbnails(PostThumbnails postThumbnails, Integer locationId) {
-        FacilityEntity facilityEntity = facilityRepository.findById(locationId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
-        // 같은 경로 및 파일이 존재하면 에러처리
-        ThumbnailEntity exists = thumbnailRepository.findByPath(postThumbnails.getFile_path()).orElse(null);
 
-        if (exists == null) {
-            ThumbnailEntity thumbnailEntity = ThumbnailEntity.from(postThumbnails, facilityEntity);
-            return thumbnailRepository.save(thumbnailEntity).getId();
-        } else {
-            return -1;
-        }
-    }
     public Integer getMapGroupIdByMapId(Integer mapId) {
         return mapRepository.findMapGroupIdByMapId(mapId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
     }
 
+    public Boolean getMapsByLocationIdAndDate(Integer facilityId, String regdate) {
+        LocalDate date = LocalDate.parse(regdate.split("_")[0],DateTimeFormatter.ofPattern("yyyyMMdd"));
+        LocalTime time = LocalTime.parse(regdate.split("_")[1],DateTimeFormatter.ofPattern("HHmmss"));
+        List<MapEntity> results = mapRepository.findByLocationIdAndDatetime(facilityId,date,time);
+        if (results.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public Integer postMapGroup(Integer facilityId) {
+        FacilityEntity facilityEntity = facilityRepository.findById(facilityId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        MapGroupEntity mapGroupEntity = MapGroupEntity.builder().facilityEntity(facilityEntity).build();
+        return mapGroupRepository.save(mapGroupEntity).getId();
+    }
+
+    public Integer postMaps(PostMapReq postMapReq, Integer mapGroupId, Integer facilityId) {
+        // location
+        MapGroupEntity mapGroupEntity = mapGroupRepository.findByIdAndFacilityId(mapGroupId,facilityId).orElseThrow(
+                () -> new AppException(ErrorCode.DATA_NOT_FOUND)
+        );
+        MapEntity mapEntity = MapEntity.from(postMapReq,mapGroupEntity);
+        return mapRepository.save(mapEntity).getId();
+    }
 }

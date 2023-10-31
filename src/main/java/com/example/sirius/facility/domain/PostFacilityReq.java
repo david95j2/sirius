@@ -4,8 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.json.simple.JSONObject;
-
+import org.json.JSONObject;
 
 @Getter @Setter
 public class PostFacilityReq {
@@ -17,16 +16,13 @@ public class PostFacilityReq {
     private Float latitude;
     @NotNull(message = "경도는 필수 입력값입니다. 키가 longitude인지 확인해주세요.")
     private Float longitude;
+    private String locationAscii;
 
     public static PostFacilityReq fromJSONObject(JSONObject jsonObject) {
         PostFacilityReq request = new PostFacilityReq();
 
         if (jsonObject.get("location") != null) {
             request.setLocation((String) jsonObject.get("location"));
-        }
-
-        if (jsonObject.get("name") != null) {
-            request.setName((String) jsonObject.get("name"));
         }
 
         if (jsonObject.get("latitude") != null) {

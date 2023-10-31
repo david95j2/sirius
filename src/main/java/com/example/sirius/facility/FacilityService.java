@@ -3,14 +3,12 @@ package com.example.sirius.facility;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
-import com.example.sirius.facility.domain.FacilityEntity;
-import com.example.sirius.facility.domain.PatchFacilityReq;
-import com.example.sirius.facility.domain.PatchFacilityRes;
-import com.example.sirius.facility.domain.PostFacilityReq;
+import com.example.sirius.facility.domain.*;
 import com.example.sirius.user.UserRepository;
 import com.example.sirius.user.UserService;
 import com.example.sirius.user.domain.GetUsersRes;
 import com.example.sirius.user.domain.UserEntity;
+import com.example.sirius.utils.SiriusUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +22,7 @@ public class FacilityService {
     private FacilityRepository facilityRepository;
     private UserService userService;
     private UserRepository userRepository;
+    private ThumbnailRepository thumbnailRepository;
     public BaseResponse getFacilities(String loginId) {
         userService.getUserByLoginId(loginId);
         List<FacilityEntity> result = facilityRepository.findAll();
@@ -45,9 +44,12 @@ public class FacilityService {
             patchFacilityReq.setLongitude(postFacilityReq.getLongitude());
             return patchFacility(patchFacilityReq, comparedName.getId(),loginId,true);
         } else { // 장소가 없으면 post
+            String unicode = SiriusUtils.stringToUnicode(postFacilityReq.getLocation());
+            postFacilityReq.setLocationAscii(unicode);
             FacilityEntity facilityEntity = FacilityEntity.from(postFacilityReq,userEntity);
             facilityRepository.save(facilityEntity).getId();
-            return new BaseResponse(ErrorCode.CREATED, facilityEntity.toDto());
+            PatchFacilityRes patchFacilityRes = facilityEntity.toDto();
+            return new BaseResponse(ErrorCode.CREATED, patchFacilityRes);
         }
     }
 
@@ -80,5 +82,18 @@ public class FacilityService {
         FacilityEntity facilityEntity = facilityRepository.findByIdAndLoginId(facilityId,loginId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
         facilityRepository.delete(facilityEntity);
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(facilityId)+"번 시설물이 삭제되었습니다.");
+    }
+
+    public Integer postFacilityThumbnails(PostThumbnails postThumbnails, Integer locationId) {
+        FacilityEntity facilityEntity = facilityRepository.findById(locationId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
+        // 같은 경로 및 파일이 존재하면 에러처리
+        ThumbnailEntity exists = thumbnailRepository.findByPath(postThumbnails.getFile_path()).orElse(null);
+
+        if (exists == null) {
+            ThumbnailEntity thumbnailEntity = ThumbnailEntity.from(postThumbnails, facilityEntity);
+            return thumbnailRepository.save(thumbnailEntity).getId();
+        } else {
+            return -1;
+        }
     }
 }

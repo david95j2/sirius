@@ -23,6 +23,8 @@ public class FacilityEntity {
     @Column(name = "id")
     private Integer id;
     private String location;
+    @Column(name = "location_ascii")
+    private String locationAscii;
     private String name;
     private Float latitude;
     private Float longitude;
@@ -41,6 +43,7 @@ public class FacilityEntity {
         return FacilityEntity.builder()
                 .userEntity(userEntity)
                 .location(postFacilityReq.getLocation())
+                .locationAscii(postFacilityReq.getLocationAscii())
                 .name(postFacilityReq.getName())
                 .latitude(postFacilityReq.getLatitude())
                 .longitude(postFacilityReq.getLongitude())

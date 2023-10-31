@@ -12,8 +12,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebMvc
 @Getter
-public class MyConfiguration implements WebMvcConfigurer {
-    private static final Logger logger = LoggerFactory.getLogger(MyConfiguration.class);
+public class WebConfiguration implements WebMvcConfigurer {
+    private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
     private static final String ALLOWED_METHOD_NAMES = "GET,HEAD,POST,PUT,DELETE,TRACE,OPTIONS,PATCH";
 
     @Value("${webgcs.cors.user.1}")

@@ -200,7 +200,7 @@ public class SiriusUtils {
                 String line;
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     while ((line = reader.readLine()) != null) {
-                        output.append(line).append("\n");
+                        output.append(line);
                     }
                 }
             } else {
@@ -234,6 +234,7 @@ public class SiriusUtils {
     public static List<String> listFilesInDirectoryNIO(String path) throws IOException {
         return Files.list(Paths.get(path))
                 .filter(Files::isRegularFile)
+                .sorted()
                 .map(Path::getFileName)
                 .map(Path::toString)
                 .collect(Collectors.toList());
@@ -243,6 +244,7 @@ public class SiriusUtils {
         return Files.list(Paths.get(path))
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().matches(pattern))
+                .sorted()
                 .map(Path::getFileName)
                 .map(Path::toString)
                 .collect(Collectors.toList());
@@ -324,5 +326,40 @@ public class SiriusUtils {
                 imageOutputStream.write(buffer, 0, bytesRead);
             }
         }
+    }
+
+    public static String stringToUnicode(String str) {
+        StringBuilder unicode = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            int code = str.codePointAt(i);
+            unicode.append(code < 128 ? (char) code : String.format("\\u%04x", code));
+        }
+        return unicode.toString();
+    }
+
+    public static String unicodeToString(String unicode) {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < unicode.length(); i++) {
+            if (unicode.charAt(i) == '\\' && unicode.charAt(i + 1) == 'u') {
+                char ch = (char) Integer.parseInt(unicode.substring(i + 2, i + 6), 16);
+                str.append(ch);
+                i += 5;
+            } else {
+                str.append(unicode.charAt(i));
+            }
+        }
+        return str.toString();
+    }
+
+    public static String addBackslashAndDecodeUsingSplit(String str) {
+        String[] parts = str.split("u");
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 1; i < parts.length; i++) {
+
+            sb.append("\\u").append(parts[i]);
+        }
+
+        return unicodeToString(sb.toString());
     }
 }

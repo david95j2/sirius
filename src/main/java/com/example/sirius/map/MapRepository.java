@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface MapRepository extends JpaRepository<MapEntity, Integer> {
@@ -23,4 +26,10 @@ public interface MapRepository extends JpaRepository<MapEntity, Integer> {
             "join m.mapGroupEntity mg " +
             "where m.id=:mapId")
     Optional<MapGroupEntity> findMapGroupByMapId(@Param("mapId") Integer mapId);
+
+    @Query("select m from MapEntity m " +
+            "join m.mapGroupEntity mg join mg.facilityEntity f " +
+            "where f.id=:facilityId and m.date=:date and m.time=:time")
+    List<MapEntity> findByLocationIdAndDatetime(@Param("facilityId") Integer facilityId,@Param("date") LocalDate date,
+                                                @Param("time") LocalTime time);
 }

@@ -1,11 +1,8 @@
 package com.example.sirius.websocket.domain;
 
 
-import com.example.sirius.album.analysis.AnalysisRepository;
 import com.example.sirius.album.analysis.SegmentationRepository;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
-import com.example.sirius.album.picture.PictureRepository;
-import com.example.sirius.album.picture.domain.PictureEntity;
 import com.example.sirius.utils.SiriusUtils;
 import com.example.sirius.websocket.AbstractWebSocketHandler;
 import lombok.AllArgsConstructor;
@@ -17,20 +14,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-@Component("analysesWebSocketHandler")
+@Component("modifySegWebSocketHandler")
 @AllArgsConstructor
 @Slf4j
-public class AnalysesWebSocketHandler extends AbstractWebSocketHandler {
+public class ModifySegWebSocketHandler extends AbstractWebSocketHandler {
     private SegmentationRepository segmentationRepository;
 
     @Override

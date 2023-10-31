@@ -8,6 +8,7 @@ import com.example.sirius.user.domain.PostLoginReq;
 import com.example.sirius.user.domain.PostUserReq;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private UserService userService;
     @GetMapping("api/users")
-    public BaseResponse getUsers() {
+    public ResponseEntity<BaseResponse> getUsers() {
         return userService.getUsers();
     }
 

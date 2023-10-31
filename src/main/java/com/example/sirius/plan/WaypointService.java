@@ -33,9 +33,6 @@ public class WaypointService {
         ShapeEntity shapeEntity = shapeRepository.findById(shapeId).orElseThrow(
                 () -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        /* mission_id 와 seq 를 조회해서 seq가 중간에 들어올 시 update해야 함.*/
-        waypointRepository.incrementSeqGreaterThan(shapeId, postWaypointReq.getSeq());
-
         WaypointEntity waypointEntity = WaypointEntity.from(postWaypointReq, shapeEntity);
         Integer id = waypointRepository.save(waypointEntity).getId();
 
@@ -43,12 +40,8 @@ public class WaypointService {
     }
 
     public BaseResponse deleteWayPoint(Integer waypoint_id,Integer shapeId) {
-        /* mission_id 와 seq 를 조회해서 seq가 중간에 들어올 시 update해야 함.*/
         WaypointEntity waypointEntity = waypointRepository.findByIdAndShapeId(waypoint_id,shapeId).orElseThrow(()->new AppException(ErrorCode.DATA_NOT_FOUND));
-        waypointRepository.decrementSeqGreaterThan(waypointEntity.getShapeEntity().getId(), waypointEntity.getSeq());
-
         waypointRepository.delete(waypointEntity);
-
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(waypoint_id)+"번 Waypoint가 삭제되었습니다.");
     }
 }

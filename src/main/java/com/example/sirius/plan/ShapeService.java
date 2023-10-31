@@ -149,7 +149,7 @@ public class ShapeService {
         PropertyEntity propertyEntity = PropertyEntity.builder()
                         .shapeEntity(shapeEntity).build();
 
-        switch (request.getShape().toLowerCase()) {
+        switch (request.getShape()) {
             case "rectangle":
                 checkNotNull(request.getRect_inward(), "rect_inward");
                 checkNotNull(request.getRectCoeffsPoint1X(), "rectCoeffsPoint1X");
@@ -197,7 +197,7 @@ public class ShapeService {
                 propertyEntity.setBottomAuto(request.getBottom_auto());
                 propertyEntity.setBottomWhole(request.getBottom_whole());
                 break;
-            case "waypoint":
+            case "waypoint" : case "Merged Circle": case "Merged Rectangle":
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_INPUT);

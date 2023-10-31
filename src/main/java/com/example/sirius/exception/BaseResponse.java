@@ -9,6 +9,10 @@ public class BaseResponse  {
 
     private Object result;
 
+    public BaseResponse(Object object) {
+        this.result = object;
+    }
+
     public BaseResponse(ErrorCode errorCode) {
         this.status = errorCode.getStatus().value();
         this.message = errorCode.getMessage();
