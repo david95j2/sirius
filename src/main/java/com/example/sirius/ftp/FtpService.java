@@ -82,6 +82,9 @@ public class FtpService {
                     facilityService.postFacilityThumbnails(postThumbnails, location_id);
                     thumbnail_num += 1;
                 }
+                facilityEntity.setLatitude(infoMap.getFloat("latitude"));
+                facilityEntity.setLongitude(infoMap.getFloat("longitude"));
+                facilityRepository.save(facilityEntity);
             }
         }
 

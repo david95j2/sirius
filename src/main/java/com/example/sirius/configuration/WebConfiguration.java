@@ -25,6 +25,9 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Value("${webgcs.cors.user.3}")
     private String user3Ip;
 
+    @Value("${webgcs.cors.user.4}")
+    private String user4Ip;
+
     @Value("${ftp.ip}")
     private String ftpIp;
 
@@ -40,7 +43,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // 모든 요청 경로에 대해
-                .allowedOrigins(user1Ip, user2Ip,user3Ip)
+                .allowedOrigins(user1Ip, user2Ip,user3Ip,user4Ip)
                 .allowedMethods(ALLOWED_METHOD_NAMES.split(","));
     }
 }

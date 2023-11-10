@@ -73,18 +73,35 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/torchrun";
         String gpuNum = "--nproc_per_node=6";
 
+        long startTimeSec = System.nanoTime();
         // Run mmseg
         String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg.py";
         List<String> args = Arrays.asList("--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py", "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
                 "--srx_dir", Paths.get(pictureEntity.getFilePath()).getParent().toString(), "--srx_suffix", "."+FilenameUtils.getExtension(pictureEntity.getFilePath()));
         SiriusUtils.executePythonScript(pythonPath, scriptPath, args, "mmseg", gpuNum);
+        long endTimeSec = System.nanoTime();
 
+        long timeElapsedSec = endTimeSec - startTimeSec;
+        double timeInSecondSec = (double)timeElapsedSec / 1_000_000_000;
+        System.out.println("Segmetation 분석 실행 시간 : " + timeInSecondSec + "초");
+
+        long startTimeThird = System.nanoTime();
+        
         // Run visualizer.py
         pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
         String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
         List<String> anotherArgs = Arrays.asList("--folder_path", Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
         SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
 
+
+        long endTimeThird = System.nanoTime();
+
+        long timeElapsedThird = endTimeThird - startTimeThird;
+        double timeInSecondThird = (double)timeElapsedThird / 1_000_000_000;
+        System.out.println("Visualize 실행 시간 : " + timeInSecondThird + "초");
+
+        long startTimeForth = System.nanoTime();
+        
         // analyses db update
         already_analysisEntity.setStatus(1);
         analysisRepository.save(already_analysisEntity);
@@ -114,6 +131,13 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
 
             return null;
         }).collect(Collectors.toList());
+
+
+        long endTimeForth = System.nanoTime();
+
+        long timeElapsedForth = endTimeForth - startTimeForth;
+        double timeInSecondForth = (double)timeElapsedForth / 1_000_000_000;
+        System.out.println("DB Upload 실행 시간 : " + timeInSecondForth + "초");
 
         super.handleTextMessage(session, new TextMessage("[Message] Success"));
     }

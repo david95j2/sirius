@@ -10,6 +10,7 @@ import com.example.sirius.plan.MissionService;
 import com.example.sirius.utils.SiriusUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.commons.compress.harmony.unpack200.bytecode.forms.IntRefForm;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -36,10 +37,10 @@ public class AlbumController {
         return albumService.getAlbumById(album_id,mission_id);
     }
 
-    @PostMapping("api/report/maps/missions/{mission_id}/albums")
-    public BaseResponse postAlbum(@PathVariable Integer mission_id, @Valid @RequestBody PostAlbumReq postAlbumReq) {
-        return albumService.postAlbum(postAlbumReq,mission_id);
-    }
+//    @PostMapping("api/report/maps/missions/{mission_id}/albums")
+//    public BaseResponse postAlbum(@PathVariable Integer mission_id, @Valid @RequestBody PostAlbumReq postAlbumReq) {
+//        return albumService.postAlbum(postAlbumReq,mission_id);
+//    }
 
     @PatchMapping("api/report/maps/missions/{mission_id}/albums/{album_id}")
     public BaseResponse patchAlbum(@PathVariable Integer mission_id, @PathVariable Integer album_id,
@@ -59,8 +60,8 @@ public class AlbumController {
     }
 
     // URL 수정하자
-    @PostMapping("api/report/maps/{map_id}/albums/upload")
-    public BaseResponse uploadPictures(@PathVariable Integer map_id,@RequestParam("files") MultipartFile[] files) {
+    @PostMapping("api/report/maps/missions/{mission_id}/albums/upload")
+    public BaseResponse uploadPictures(@PathVariable Integer mission_id,@RequestParam("files") MultipartFile[] files) {
         for (MultipartFile file : files) {
             String contentType = file.getContentType();
 
@@ -76,11 +77,11 @@ public class AlbumController {
 //            missionService.getMissionOnlyId(Integer.valueOf(baseFilename));
 
             if (originalFilename.endsWith(".zip") || contentType.equalsIgnoreCase("application/zip")) {
-                return albumService.unZip(file, map_id); // Assume zipService is the service that handles .zip files
+                return albumService.unZip(file, mission_id); // Assume zipService is the service that handles .zip files
             } else if (originalFilename.endsWith(".tar") || originalFilename.endsWith(".tgz") ||
                     contentType.equalsIgnoreCase("application/x-tar") ||
                     contentType.equalsIgnoreCase("application/x-compressed-tar")) {
-                return albumService.unTarOrTgzFile(file,map_id); // Assume tarService is the service that handles .tar and .tgz files
+                return albumService.unTarOrTgzFile(file,mission_id); // Assume tarService is the service that handles .tar and .tgz files
             } else {
                 throw new AppException(ErrorCode.DATA_NOT_ALLOWED);
             }
@@ -98,5 +99,10 @@ public class AlbumController {
     public ResponseEntity<InputStreamResource> getPictureThumbnailById(@PathVariable Integer picture_id) throws IOException {
         Resource file = albumService.getPictureFileById(picture_id);
         return SiriusUtils.getFile(file, true);
+    }
+
+    @DeleteMapping("api/report/maps/missions/albums/pictures/{picture_id}")
+    public ResponseEntity<BaseResponse> deletePicture(@PathVariable Integer picture_id) {
+        return albumService.deletePicture(picture_id);
     }
 }

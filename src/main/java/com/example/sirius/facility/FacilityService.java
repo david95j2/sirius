@@ -44,7 +44,7 @@ public class FacilityService {
             patchFacilityReq.setLongitude(postFacilityReq.getLongitude());
             return patchFacility(patchFacilityReq, comparedName.getId(),loginId,true);
         } else { // 장소가 없으면 post
-            String unicode = SiriusUtils.stringToUnicode(postFacilityReq.getLocation());
+            String unicode = SiriusUtils.stringToUnicode(postFacilityReq.getLocation()).replace("\\","");
             postFacilityReq.setLocationAscii(unicode);
             FacilityEntity facilityEntity = FacilityEntity.from(postFacilityReq,userEntity);
             facilityRepository.save(facilityEntity).getId();

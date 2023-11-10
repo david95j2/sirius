@@ -41,7 +41,8 @@ public class MissionService {
         Integer mapGroupId = mapService.getMapGroupIdByMapId(mapId);
 
         JPAQuery<MissionEntity> query = queryFactory.selectFrom(missionEntity)
-                .where(missionEntity.mapGroupEntity.id.eq(mapGroupId));
+                .where(missionEntity.mapGroupEntity.id.eq(mapGroupId))
+                .orderBy(missionEntity.groupNum.asc());
 
         if (groupNum != null) {
             query.where(missionEntity.groupNum.eq(groupNum));

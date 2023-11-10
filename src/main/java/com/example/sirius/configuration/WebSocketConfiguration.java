@@ -12,18 +12,18 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Configuration
 @EnableWebSocket
 public class WebSocketConfiguration implements WebSocketConfigurer {
-    private final AbstractWebSocketHandler chatHandler;
+    private final AbstractWebSocketHandler testHandler;
     private final AbstractWebSocketHandler modifySegHandler;
     private final AbstractWebSocketHandler airSDKHandler;
     private final AbstractWebSocketHandler segmentationHandler;
 
     public WebSocketConfiguration(
-            @Qualifier("chatWebSocketHandler") AbstractWebSocketHandler chatHandler,
+            @Qualifier("testWebSocketHandler") AbstractWebSocketHandler testHandler,
             @Qualifier("modifySegWebSocketHandler") AbstractWebSocketHandler modifySegHandler,
             @Qualifier("airSDKWebSocketHandler") AbstractWebSocketHandler airSDKHandler,
             @Qualifier("segmentationWebSocketHandler") AbstractWebSocketHandler segmentationHandler
     ) {
-        this.chatHandler = chatHandler;
+        this.testHandler = testHandler;
         this.modifySegHandler = modifySegHandler;
         this.airSDKHandler = airSDKHandler;
         this.segmentationHandler = segmentationHandler;
@@ -31,7 +31,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatHandler, "/test")
+        registry.addHandler(testHandler, "/test")
                 .addInterceptors(new UserIdHandshakeInterceptor()) // 인터셉터 추가
                 .setAllowedOrigins("*");
         registry.addHandler(modifySegHandler, "{loginId}/analyses/modify")
