@@ -5,7 +5,9 @@ import com.example.sirius.album.analysis.domain.PostAnalysisReq;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import com.example.sirius.album.picture.AlbumRepository;
 import com.example.sirius.album.picture.AlbumService;
+import com.example.sirius.album.picture.PictureRepository;
 import com.example.sirius.album.picture.domain.AlbumEntity;
+import com.example.sirius.album.picture.domain.PictureEntity;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
@@ -13,6 +15,8 @@ import com.example.sirius.utils.SiriusUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.compressors.FileNameUtil;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +34,7 @@ public class AnalysisService {
     private AnalysisRepository analysisRepository;
     private SegmentationRepository segmentationRepository;
     private AlbumRepository albumRepository;
+    private PictureRepository pictureRepository;
 
     public BaseResponse getAnalyses(Integer albumId) {
         List<AnalysisEntity> results = analysisRepository.findAllByAlbumId(albumId);
@@ -106,8 +111,12 @@ public class AnalysisService {
         return new BaseResponse(ErrorCode.SUCCESS, segmentationEntity.toDto());
     }
 
-    public Resource getSegmentationFile(Integer segmentationId, String type) {
-        SegmentationEntity segmentationEntity = segmentationRepository.findSegBySegId(segmentationId).orElse(null);
+    public Resource getSegmentationFile(Integer pictureId, String type) {
+        PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        String origin_file_name = pictureEntity.getFilePath().replace(FileNameUtils.getExtension(pictureEntity.getFilePath()),"png");
+        origin_file_name = origin_file_name.replace("origin","result/drawImage");
+        SegmentationEntity segmentationEntity = segmentationRepository.findByFileName(origin_file_name).orElse(null);
         if (segmentationEntity == null) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }

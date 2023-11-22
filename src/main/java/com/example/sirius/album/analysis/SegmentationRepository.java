@@ -2,6 +2,7 @@ package com.example.sirius.album.analysis;
 
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,14 @@ public interface SegmentationRepository extends JpaRepository<SegmentationEntity
     @Query("select s from SegmentationEntity s where s.id=:segmentationId")
     Optional<SegmentationEntity> findSegBySegId(@Param("segmentationId") Integer segmentationId);
 
-    @Transactional
+    @Modifying
     @Query("delete from SegmentationEntity s where s.analysisEntity.albumEntity.id=:albumId")
     Integer deleteByAlbumId(@Param("albumId") Integer albumId);
+
+    @Modifying
+    @Query("delete from SegmentationEntity s where s.drawFilePath=:fileName")
+    Integer deleteByFileName(@Param("fileName") String fileName);
+
+    @Query("select s from SegmentationEntity s where s.drawFilePath=:originFileName")
+    Optional<SegmentationEntity> findByFileName(@Param("originFileName") String originFileName);
 }

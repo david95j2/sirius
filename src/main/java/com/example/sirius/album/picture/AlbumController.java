@@ -25,7 +25,6 @@ import java.util.List;
 @AllArgsConstructor
 public class AlbumController {
     private AlbumService albumService;
-    private MissionService missionService;
 
     @GetMapping("api/report/maps/missions/{mission_id}/albums")
     public BaseResponse getAlbums(@PathVariable Integer mission_id) {
@@ -60,8 +59,8 @@ public class AlbumController {
     }
 
     // URL 수정하자
-    @PostMapping("api/report/maps/missions/{mission_id}/albums/upload")
-    public BaseResponse uploadPictures(@PathVariable Integer mission_id,@RequestParam("files") MultipartFile[] files) {
+    @PostMapping("api/report/maps/{map_id}/missions/{mission_id}/albums/upload")
+    public BaseResponse uploadPictures(@PathVariable Integer map_id,@PathVariable Integer mission_id,@RequestParam("files") MultipartFile[] files) {
         for (MultipartFile file : files) {
             String contentType = file.getContentType();
 
@@ -101,8 +100,8 @@ public class AlbumController {
         return SiriusUtils.getFile(file, true);
     }
 
-    @DeleteMapping("api/report/maps/missions/albums/pictures/{picture_id}")
-    public ResponseEntity<BaseResponse> deletePicture(@PathVariable Integer picture_id) {
+    @DeleteMapping("api/report/maps/missions/albums/{album_id}/pictures/{picture_id}")
+    public ResponseEntity<BaseResponse> deletePicture(@PathVariable Integer album_id,@PathVariable Integer picture_id) {
         return albumService.deletePicture(picture_id);
     }
 }

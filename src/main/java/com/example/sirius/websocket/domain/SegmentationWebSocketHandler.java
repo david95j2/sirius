@@ -12,6 +12,8 @@ import com.example.sirius.album.picture.domain.AlbumEntity;
 import com.example.sirius.album.picture.domain.PictureEntity;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.map.MapRepository;
+import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.utils.SiriusUtils;
 import com.example.sirius.websocket.AbstractWebSocketHandler;
 import lombok.AllArgsConstructor;
@@ -41,6 +43,7 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
     private SegmentationRepository segmentationRepository;
     private PictureRepository pictureRepository;
     private AlbumRepository albumRepository;
+    private MapRepository mapRepository;
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         // client로부터 메세지 받음
@@ -73,8 +76,8 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/torchrun";
         String gpuNum = "--nproc_per_node=6";
 
-        long startTimeSec = System.nanoTime();
         // Run mmseg
+        long startTimeSec = System.nanoTime();
         String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg.py";
         List<String> args = Arrays.asList("--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py", "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
                 "--srx_dir", Paths.get(pictureEntity.getFilePath()).getParent().toString(), "--srx_suffix", "."+FilenameUtils.getExtension(pictureEntity.getFilePath()));
@@ -85,24 +88,34 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         double timeInSecondSec = (double)timeElapsedSec / 1_000_000_000;
         System.out.println("Segmetation 분석 실행 시간 : " + timeInSecondSec + "초");
 
-        long startTimeThird = System.nanoTime();
-        
+        // Run Calculate Distance
+        long startTimeFifth = System.nanoTime();
+
+        String secondScriptPath = "/home/sb/workspace/calc_dis/build/calcDistance";
+        MapEntity mapEntity = mapRepository.findByAlbumIdAndFileName(albumEntity.getId(),"GlobalMap.pcd").orElse(null);
+        List<String> secondArgs = Arrays.asList(Paths.get(pictureEntity.getFilePath()).getParent().toString().replace("/origin",""), mapEntity.getMapPath());
+        SiriusUtils.executePythonScript(null, secondScriptPath, secondArgs, secondScriptPath.split("/")[secondScriptPath.split("/").length - 1], null);
+        long endTimeFifth = System.nanoTime();
+        long timeElapsedFifth = endTimeFifth - startTimeFifth;
+        double timeInSecondFifth = (double) timeElapsedFifth / 1_000_000_000;
+        System.out.println("CalDistance 실행 시간 : "+timeInSecondFifth + "초");
+
         // Run visualizer.py
         pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
+
+        long startTimeThird = System.nanoTime();
         String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
         List<String> anotherArgs = Arrays.asList("--folder_path", Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
         SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
-
-
         long endTimeThird = System.nanoTime();
 
         long timeElapsedThird = endTimeThird - startTimeThird;
         double timeInSecondThird = (double)timeElapsedThird / 1_000_000_000;
         System.out.println("Visualize 실행 시간 : " + timeInSecondThird + "초");
 
-        long startTimeForth = System.nanoTime();
-        
+
         // analyses db update
+        long startTimeForth = System.nanoTime();
         already_analysisEntity.setStatus(1);
         analysisRepository.save(already_analysisEntity);
 

@@ -37,7 +37,12 @@ public class MissionController {
 
     @DeleteMapping("api/report/maps/{map_id}/missions/{mission_id}")
     public BaseResponse deleteMission(@PathVariable Integer map_id, @PathVariable Integer mission_id) {
-        return missionService.deleteMission(mission_id, map_id);
+        return missionService.deleteMission(mission_id, map_id, null);
+    }
+
+    @DeleteMapping("api/report/maps/{map_id}/missions/group-num/{group_num}")
+    public BaseResponse deleteMissionByGroupNum(@PathVariable Integer map_id, @PathVariable Integer group_num) {
+        return missionService.deleteMission(0,map_id,group_num);
     }
 
     @PostMapping("api/report/maps/{map_id}/fitting")

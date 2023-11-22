@@ -1,6 +1,7 @@
 package com.example.sirius.map.domain;
 
 import com.example.sirius.facility.domain.FacilityEntity;
+import com.example.sirius.plan.domain.MissionEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -31,5 +32,4 @@ public class MapGroupEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "mapGroupEntity")
     private List<MapEntity> mapEntities;
-
 }

@@ -57,8 +57,12 @@ public class MappingService {
     @Transactional
     public BaseResponse deleteMapping(Integer missionId, Integer facilityId) {
         getMappingByIdAndFacilityId(missionId, facilityId);
-        mappingRepository.deleteById(missionId);
+        deleteMappingLogic(missionId);
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(missionId) + "번 미션이 삭제되었습니다.");
     }
-
+    
+    @Transactional
+    public void deleteMappingLogic(Integer missionId) {
+        mappingRepository.deleteById(missionId);
+    }
 }

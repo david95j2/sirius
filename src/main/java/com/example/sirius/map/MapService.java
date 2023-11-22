@@ -12,6 +12,7 @@ import com.example.sirius.map.domain.GetMapsRes;
 import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.map.domain.MapGroupEntity;
 import com.example.sirius.map.domain.PostMapReq;
+import com.example.sirius.plan.MissionService;
 import com.example.sirius.user.UserService;
 import com.example.sirius.utils.SiriusUtils;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -19,6 +20,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +39,7 @@ public class MapService {
     private JPAQueryFactory queryFactory;
     private UserService userService;
     private MapRepository mapRepository;
+    private MissionService missionService;
     private FacilityRepository facilityRepository;
     private MapGroupRepository mapGroupRepository;
 
@@ -120,5 +123,19 @@ public class MapService {
         );
         MapEntity mapEntity = MapEntity.from(postMapReq,mapGroupEntity);
         return mapRepository.save(mapEntity).getId();
+    }
+
+    @Transactional
+    public BaseResponse deleteMap(Integer facilityId, Integer mapId) {
+
+        MapGroupEntity mapGroupEntity = mapGroupRepository.findByIdAndFacilityId(mapId,facilityId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        // 맵 있으면 지우기
+        mapRepository.deleteAllByMapGroupId(mapGroupEntity.getId());
+        // 미션있으면 지우기
+        missionService.deleteMissionByMapGroupId(mapGroupEntity.getId());
+        // 맵 그룹있으면 지우기
+        mapGroupRepository.delete(mapGroupEntity);
+        return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(mapId)+"번 맵이 삭제되었습니다.");
     }
 }

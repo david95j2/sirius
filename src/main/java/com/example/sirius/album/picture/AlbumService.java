@@ -36,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,8 +107,13 @@ public class AlbumService {
 
     @Transactional
     public BaseResponse deleteAlbum(Integer albumId, Integer missionId) {
-        AlbumEntity albumEntity = albumRepository.findByIdAndMissionId(albumId, missionId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        albumRepository.findByIdAndMissionId(albumId, missionId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        deleteAlbumLogic(albumId);
+        return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(albumId) + "번 앨범이 삭제되었습니다.");
+    }
 
+    @Transactional
+    public void deleteAlbumLogic(Integer albumId) {
         // 사진 있으면 지우기
         Integer deletePictureNum = pictureRepository.deleteByAlbumId(albumId);
 
@@ -117,8 +123,7 @@ public class AlbumService {
         // 분석 있으면 지우기
         Integer deleteAnalysesNum = analysisRepository.deleteByAlbumId(albumId);
 
-        albumRepository.delete(albumEntity);
-        return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(albumId) + "번 앨범이 삭제되었습니다.");
+        albumRepository.deleteById(albumId);
     }
 
     public BaseResponse getPictures(Integer albumId, String date, Integer time) {
@@ -206,16 +211,25 @@ public class AlbumService {
         return handleFile(compressedFile, missionId, ZipArchiveInputStream::new);
     }
 
-    public BaseResponse unTarOrTgzFile(MultipartFile file, Integer missionId) {
+    public BaseResponse
+    unTarOrTgzFile(MultipartFile file, Integer missionId) {
         return handleFile(file, missionId, TarArchiveInputStream::new);
     }
 
+    @Transactional
     public ResponseEntity<BaseResponse> deletePicture(Integer pictureId) {
         // 분석결과 있으면 지우기
         PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         String file_name = Paths.get(pictureEntity.getFilePath()).toString().replace(".JPG",".png");
-//        segmentationRepository.find/
-        return new ResponseEntity<>(new BaseResponse("test"), HttpStatus.CREATED);
+        file_name = file_name.replace("origin","result/drawImage");
+
+        // 분석 결과 지우기
+        segmentationRepository.deleteByFileName(file_name);
+
+        // 사진 지우기
+        pictureRepository.delete(pictureEntity);
+
+        return new ResponseEntity<>(new BaseResponse(Integer.valueOf(pictureId)+"번 사진이 삭제되었습니다."), HttpStatus.CREATED);
     }
 }

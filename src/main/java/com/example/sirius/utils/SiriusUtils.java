@@ -185,7 +185,9 @@ public class SiriusUtils {
 
     public static String executePythonScript(String pythonPath, String scriptPath, List<String> args, String type, String gpuNum) {
         List<String> commandList = new ArrayList<>();
-        commandList.add(pythonPath);
+        if (pythonPath != null) {
+            commandList.add(pythonPath);
+        }
         if (gpuNum != null) {
             commandList.add(gpuNum);
         }

@@ -46,9 +46,9 @@ public class AnalysisController {
         return analysisService.getSegmentation(analysis_id,segmentation_id);
     }
 
-    @GetMapping("api/report/maps/missions/albums/analyses/segmentations/{segmentation_id}/files")
-    public ResponseEntity<InputStreamResource> getSegmentationFile(@PathVariable Integer segmentation_id, @RequestParam(required = false) String type) throws IOException {
-        Resource file =  analysisService.getSegmentationFile(segmentation_id,type);
+    @GetMapping("api/report/maps/missions/albums/analyses/segmentations/{picture_id}/files")
+    public ResponseEntity<InputStreamResource> getSegmentationFile(@PathVariable Integer picture_id, @RequestParam(required = false) String type) throws IOException {
+        Resource file =  analysisService.getSegmentationFile(picture_id,type);
         return SiriusUtils.getFile(file, false);
     }
 }

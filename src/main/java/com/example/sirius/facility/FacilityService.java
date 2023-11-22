@@ -4,6 +4,12 @@ import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
 import com.example.sirius.facility.domain.*;
+import com.example.sirius.map.MapGroupRepository;
+import com.example.sirius.map.MapRepository;
+import com.example.sirius.mapping.MappingService;
+import com.example.sirius.plan.MissionRepository;
+import com.example.sirius.plan.MissionService;
+import com.example.sirius.plan.domain.MissionEntity;
 import com.example.sirius.user.UserRepository;
 import com.example.sirius.user.UserService;
 import com.example.sirius.user.domain.GetUsersRes;
@@ -21,7 +27,12 @@ import java.util.stream.Collectors;
 public class FacilityService {
     private FacilityRepository facilityRepository;
     private UserService userService;
+    private MissionService missionService;
+    private MappingService mappingService;
     private UserRepository userRepository;
+    private MapGroupRepository mapGroupRepository;
+    private MissionRepository missionRepository;
+    private MapRepository mapRepository;
     private ThumbnailRepository thumbnailRepository;
     public BaseResponse getFacilities(String loginId) {
         userService.getUserByLoginId(loginId);
@@ -80,6 +91,20 @@ public class FacilityService {
     public BaseResponse deleteFacility(Integer facilityId, String loginId) {
         // 시설물있는지 확인
         FacilityEntity facilityEntity = facilityRepository.findByIdAndLoginId(facilityId,loginId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        // 매핑 미션있으면 지우기
+        facilityEntity.getMappingEntities().stream().forEach(x -> mappingService.deleteMappingLogic(x.getId()));
+        // 썸네일있으면 지우기
+        thumbnailRepository.deleteAllByFacilityId(facilityId);
+        // 맵있으면 지우기
+        mapRepository.deleteAllByFacilityId(facilityId);
+        // 미션있으면 지우기
+        facilityEntity.getMapGroupEntities().stream().forEach(x -> missionService.deleteMissionByMapGroupId(x.getId()));
+        List<MissionEntity> result = missionRepository.findAll();
+
+        // 맵 그룹있으면 지우기
+        mapGroupRepository.deleteAllByFacilityId(facilityId);
+
         facilityRepository.delete(facilityEntity);
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(facilityId)+"번 시설물이 삭제되었습니다.");
     }

@@ -2,10 +2,13 @@ package com.example.sirius.plan;
 
 
 import com.example.sirius.album.analysis.domain.AnalysisEntity;
+import com.example.sirius.album.picture.AlbumRepository;
+import com.example.sirius.album.picture.AlbumService;
 import com.example.sirius.album.picture.domain.AlbumEntity;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.map.MapGroupRepository;
 import com.example.sirius.map.MapRepository;
 import com.example.sirius.map.MapService;
 import com.example.sirius.map.domain.MapEntity;
@@ -33,15 +36,19 @@ import static com.example.sirius.plan.domain.QMissionEntity.missionEntity;
 public class MissionService {
     private JPAQueryFactory queryFactory;
     private MissionRepository missionRepository;
-    private MapService mapService;
     private MapRepository mapRepository;
+    private PropertyRepository propertyRepository;
+    private ShapeRepository shapeRepository;
     private WaypointRepository waypointRepository;
+    private AlbumRepository albumRepository;
+    private AlbumService albumService;
 
     public BaseResponse getMissions(Integer mapId, Integer groupNum) {
-        Integer mapGroupId = mapService.getMapGroupIdByMapId(mapId);
+
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         JPAQuery<MissionEntity> query = queryFactory.selectFrom(missionEntity)
-                .where(missionEntity.mapGroupEntity.id.eq(mapGroupId))
+                .where(missionEntity.mapGroupEntity.id.eq(mapEntity.getMapGroupEntity().getId()))
                 .orderBy(missionEntity.groupNum.asc());
 
         if (groupNum != null) {
@@ -53,9 +60,10 @@ public class MissionService {
     }
 
     public BaseResponse getMissionById(Integer missionId, Integer mapId) {
-        Integer mapGroupId = mapService.getMapGroupIdByMapId(mapId);
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
         return new BaseResponse(ErrorCode.SUCCESS,
-                missionRepository.findByIdAndMapId(missionId, mapGroupId).orElseThrow(
+                missionRepository.findByIdAndMapGroupId(missionId, mapEntity.getMapGroupEntity().getId()).orElseThrow(
                         () -> new AppException(ErrorCode.DATA_NOT_FOUND)
                 ));
     }
@@ -73,7 +81,9 @@ public class MissionService {
     }
 
     public BaseResponse patchMission(PatchMissionReq patchMissionReq, Integer missionId, Integer mapId) {
-        MissionEntity missionEntity = missionRepository.findByIdAndMapId(missionId, mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
+        MissionEntity missionEntity = missionRepository.findByIdAndMapGroupId(missionId, mapEntity.getMapGroupEntity().getId()).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         if (patchMissionReq.getName() != null) {
             missionEntity.setName(patchMissionReq.getName());
@@ -86,10 +96,42 @@ public class MissionService {
     }
 
     @Transactional
-    public BaseResponse deleteMission(Integer missionId, Integer mapId) {
-        missionRepository.findByIdAndMapId(missionId, mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+    public BaseResponse deleteMission(Integer missionId, Integer mapId,Integer groupNum) {
+
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        Integer mapGroupId = mapEntity.getMapGroupEntity().getId();
+        if (groupNum != null) {
+            List<MissionEntity> missionEntities = missionRepository.findAllByMapGroupIdAndGroupNum(mapGroupId,groupNum);
+            missionEntities.stream().forEach(x -> deleteMissionLogic(x.getId()));
+            return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(groupNum)+"번 그룹 미션이 삭제되었습니다.");
+        } else {
+            missionRepository.findByIdAndMapGroupId(missionId, mapGroupId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+            deleteMissionLogic(missionId);
+            return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(missionId) + "번 미션이 삭제되었습니다.");
+        }
+    }
+
+    @Transactional
+    public void deleteMissionByMapGroupId(Integer mapGroupId) {
+        List<MissionEntity> missionEntities = missionRepository.findAllByMapGroupId(mapGroupId);
+        missionEntities.stream().forEach(x -> deleteMissionLogic(x.getId()));
+    }
+
+    @Transactional
+    public void deleteMissionLogic(Integer missionId) {
+        // waypoints 있으면 지우기
+        waypointRepository.deleteByMissionId(missionId);
+        // properties 있으면 지우기
+        propertyRepository.deleteByMissionId(missionId);
+        // shapes 있으면 지우기
+        shapeRepository.deleteByMissionId(missionId);
+
+        AlbumEntity albumEntity = albumRepository.findById(missionId).orElse(null);
+        if (albumEntity != null) {
+            albumService.deleteAlbumLogic(albumEntity.getId());
+        }
+
         missionRepository.deleteById(missionId);
-        return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(missionId) + "번 미션이 삭제되었습니다.");
     }
 
     public BaseResponse startFittingProgram(PostFittingReq postFittingReq,Integer mapId) {

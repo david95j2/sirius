@@ -1,6 +1,8 @@
 package com.example.sirius.facility.domain;
 
 
+import com.example.sirius.map.domain.MapGroupEntity;
+import com.example.sirius.mapping.domain.MappingEntity;
 import com.example.sirius.user.domain.UserEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,6 +40,16 @@ public class FacilityEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "facilityEntity",cascade = CascadeType.REMOVE)
     private List<ThumbnailEntity> thumbnailEntities;
+
+    @JsonManagedReference
+    @JsonIgnore
+    @OneToMany(mappedBy = "facilityEntity")
+    private List<MappingEntity> mappingEntities;
+
+    @JsonManagedReference
+    @JsonIgnore
+    @OneToMany(mappedBy = "facilityEntity")
+    private List<MapGroupEntity> mapGroupEntities;
 
     public static FacilityEntity from(PostFacilityReq postFacilityReq, UserEntity userEntity) {
         return FacilityEntity.builder()
