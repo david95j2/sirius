@@ -197,7 +197,7 @@ public class ShapeService {
                 propertyEntity.setBottomAuto(request.getBottom_auto());
                 propertyEntity.setBottomWhole(request.getBottom_whole());
                 break;
-            case "waypoint" : case "Merged Circle": case "Merged Rectangle":
+            case "waypoint" : case "Merged Circle": case "Merged Rectangle": case "abutment":
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_INPUT);

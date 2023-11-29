@@ -91,6 +91,9 @@ public class ShapeEntity {
         if (this.shape.equals("bottom")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toBottomDto());
         }
+        if (this.shape.equals("abutment")) {
+            getShapeRes.setPropertyDto(this.propertyEntity.toAbutmentDto());
+        }
         return getShapeRes;
     }
 }

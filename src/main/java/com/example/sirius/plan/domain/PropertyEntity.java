@@ -126,4 +126,10 @@ public class PropertyEntity {
         getPropertyBottomRes.setBottomWhole(this.bottomWhole);
         return getPropertyBottomRes;
     }
+
+    public GetPropertyAbutmentRes toAbutmentDto() {
+        GetPropertyAbutmentRes getPropertyAbutmentRes = new GetPropertyAbutmentRes();
+        getPropertyAbutmentRes.setId(this.id);
+        return getPropertyAbutmentRes;
+    }
 }

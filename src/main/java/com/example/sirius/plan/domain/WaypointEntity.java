@@ -28,6 +28,7 @@ public class WaypointEntity {
     private Boolean completed;
     @Column(name = "group_num")
     private Integer groupNum;
+    private Integer pitch;
 
     @JsonBackReference
     @ManyToOne
@@ -45,6 +46,7 @@ public class WaypointEntity {
                 .yaw(postWaypointReq.getYaw())
                 .checked(postWaypointReq.getChecked())
                 .completed(postWaypointReq.getCompleted())
+                .pitch(postWaypointReq.getPitch())
                 .build();
     }
 }

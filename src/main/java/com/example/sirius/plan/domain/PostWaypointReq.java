@@ -22,4 +22,6 @@ public class PostWaypointReq {
     private Boolean completed;
     @NotNull(message = "Filed Name이 group_num 인지 확인하십시오.")
     private Integer group_num;
+    @NotNull(message = "Filed Name이 pitch 인지 확인하십시오.")
+    private Integer pitch;
 }
