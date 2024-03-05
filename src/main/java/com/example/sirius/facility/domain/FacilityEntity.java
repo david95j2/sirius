@@ -62,6 +62,12 @@ public class FacilityEntity {
                 .build();
     }
 
+    public static FacilityEntity from_null(UserEntity userEntity) {
+        return FacilityEntity.builder()
+                .userEntity(userEntity)
+                .build();
+    }
+
     public PatchFacilityRes toDto() {
         PatchFacilityRes patchFacilityRes = new PatchFacilityRes();
         patchFacilityRes.setId(this.id);

@@ -19,6 +19,11 @@ public class WaypointController {
         return waypointService.getWaypoints(shape_id);
     }
 
+    @GetMapping("api/report/maps/missions/{mission_id}/shapes/waypoints")
+    public BaseResponse getWaypointsByMissionId(@PathVariable Integer mission_id) {
+        return waypointService.getWaypointsByMissionId(mission_id);
+    }
+
     @GetMapping("api/report/maps/missions/shapes/{shape_id}/waypoints/{waypoint_id}")
     public BaseResponse getWaypointById(@PathVariable Integer shape_id,@PathVariable Integer waypoint_id) {
         return waypointService.getWaypointById(waypoint_id, shape_id);
@@ -31,7 +36,7 @@ public class WaypointController {
 
     @DeleteMapping("api/report/maps/missions/shapes/{shape_id}/waypoints/{waypoint_id}")
     @ResponseBody
-    public BaseResponse deleteWayPoint(@PathVariable("mission_id") Integer shape_id,@PathVariable("waypoint_id") Integer waypoint_id) {
+    public BaseResponse deleteWayPoint(@PathVariable("shape_id") Integer shape_id,@PathVariable("waypoint_id") Integer waypoint_id) {
         return waypointService.deleteWayPoint(waypoint_id,shape_id);
     }
 }

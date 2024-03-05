@@ -1,26 +1,20 @@
-package com.example.sirius.websocket.domain;
+package com.example.sirius.websocket;
 
 
 import com.example.sirius.album.analysis.AnalysisRepository;
 import com.example.sirius.album.analysis.SegmentationRepository;
 import com.example.sirius.album.analysis.domain.AnalysisEntity;
-import com.example.sirius.album.analysis.domain.PostAnalysisReq;
 import com.example.sirius.album.analysis.domain.SegmentationEntity;
 import com.example.sirius.album.picture.AlbumRepository;
 import com.example.sirius.album.picture.PictureRepository;
 import com.example.sirius.album.picture.domain.AlbumEntity;
 import com.example.sirius.album.picture.domain.PictureEntity;
-import com.example.sirius.exception.AppException;
-import com.example.sirius.exception.ErrorCode;
 import com.example.sirius.map.MapRepository;
 import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.utils.SiriusUtils;
-import com.example.sirius.websocket.AbstractWebSocketHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-
-
 import org.json.JSONObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -30,7 +24,6 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,7 +79,6 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
 
         long timeElapsedSec = endTimeSec - startTimeSec;
         double timeInSecondSec = (double)timeElapsedSec / 1_000_000_000;
-        System.out.println("Segmetation 분석 실행 시간 : " + timeInSecondSec + "초");
 
         // Run Calculate Distance
         long startTimeFifth = System.nanoTime();
@@ -100,19 +92,20 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         double timeInSecondFifth = (double) timeElapsedFifth / 1_000_000_000;
         System.out.println("CalDistance 실행 시간 : "+timeInSecondFifth + "초");
 
+
         // Run visualizer.py
-        pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
-
-        long startTimeThird = System.nanoTime();
-        String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
-        List<String> anotherArgs = Arrays.asList("--folder_path", Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
-        SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
-        long endTimeThird = System.nanoTime();
-
-        long timeElapsedThird = endTimeThird - startTimeThird;
-        double timeInSecondThird = (double)timeElapsedThird / 1_000_000_000;
-        System.out.println("Visualize 실행 시간 : " + timeInSecondThird + "초");
-
+//        pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
+//
+//        long startTimeThird = System.nanoTime();
+//        String anotherScriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/visualizer.py";
+//        List<String> anotherArgs = Arrays.asList("--folder_path", Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
+//        System.out.println(anotherArgs);
+//        SiriusUtils.executePythonScript(pythonPath, anotherScriptPath, anotherArgs, anotherScriptPath.split("/")[anotherScriptPath.split("/").length - 1],null);
+//        long endTimeThird = System.nanoTime();
+//
+//        long timeElapsedThird = endTimeThird - startTimeThird;
+//        double timeInSecondThird = (double)timeElapsedThird / 1_000_000_000;
+//        System.out.println("Visualize 실행 시간 : " + timeInSecondThird + "초");
 
         // analyses db update
         long startTimeForth = System.nanoTime();
@@ -123,19 +116,25 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
         AnalysisEntity final_analysisEntity = already_analysisEntity;
         List<String> fileList = SiriusUtils.listFilesInDirectoryNIO(Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString());
         fileList.stream().map(x -> {
-
             String originPath = Paths.get(FilenameUtils.removeExtension(pictureEntity.getFilePath())).getParent().toString();
             String originName = FilenameUtils.removeExtension(x);
             String jsonPattern = String.format("%s%s_.*\\.json", originPath.replace("origin", "result/json/"), originName);
             String jsonName = "";
+
             try {
                 List<String> matchedJsonFiles = SiriusUtils.listFilesMatchingPattern(originPath.replace("origin", "result/json/"), jsonPattern);
                 if (matchedJsonFiles.size() > 0) {
-                    jsonName = originPath.replace("origin","result/json/")+matchedJsonFiles.get(0);
+                    if (matchedJsonFiles.size() > 1){
+                        jsonName = originPath.replace("origin","result/json/")+matchedJsonFiles.get(1);
+                    } else {
+                        jsonName = originPath.replace("origin","result/json/")+matchedJsonFiles.get(0);
+                    }
+//                    jsonName = originPath.replace("origin","result/json/")+matchedJsonFiles.get(0);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             String drawName = originPath.replace("origin","result/drawImage/")+originName+".png";
             String maskName = originPath.replace("origin","result/maskImage/")+originName+".png";
 
@@ -144,7 +143,6 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
 
             return null;
         }).collect(Collectors.toList());
-
 
         long endTimeForth = System.nanoTime();
 

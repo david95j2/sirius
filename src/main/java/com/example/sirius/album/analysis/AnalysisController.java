@@ -1,5 +1,6 @@
 package com.example.sirius.album.analysis;
 
+import com.example.sirius.album.analysis.domain.PatchAnalysisReq;
 import com.example.sirius.album.analysis.domain.PostAnalysisReq;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.utils.SiriusUtils;
@@ -31,6 +32,11 @@ public class AnalysisController {
         return analysisService.postAnalysis(postAnalysisReq,album_id);
     }
 
+    @PatchMapping("api/report/maps/missions/albums/{album_id}/analyses/{analysis_id}")
+    public BaseResponse patchAnalysisById(@PathVariable Integer album_id,@PathVariable Integer analysis_id, @Valid @RequestBody PatchAnalysisReq patchAnalysisReq) {
+        return analysisService.patchAnalysisById(patchAnalysisReq,album_id,analysis_id);
+    }
+
     @DeleteMapping("api/report/maps/missions/albums/{album_id}/analyses/{analysis_id}")
     public BaseResponse deleteAnalysis(@PathVariable Integer album_id, @PathVariable Integer analysis_id) {
         return analysisService.deleteAnalysis(analysis_id,album_id);
@@ -47,8 +53,12 @@ public class AnalysisController {
     }
 
     @GetMapping("api/report/maps/missions/albums/analyses/segmentations/{picture_id}/files")
-    public ResponseEntity<InputStreamResource> getSegmentationFile(@PathVariable Integer picture_id, @RequestParam(required = false) String type) throws IOException {
+    public ResponseEntity<InputStreamResource> getSegmentationFile(@PathVariable Integer picture_id, @RequestParam(required = false) String type, @RequestParam(required = false) Boolean resize) throws Exception {
         Resource file =  analysisService.getSegmentationFile(picture_id,type);
-        return SiriusUtils.getFile(file, false);
+        if (resize == null) {
+            resize = false;
+        }
+        return SiriusUtils.resizeImageWithMetadataAndSend(file,resize);
+//        return SiriusUtils.getFile(file, false, resize);
     }
 }

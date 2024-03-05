@@ -10,12 +10,12 @@ import lombok.Setter;
 public class PostPropertyReq {
     private Boolean lineAuto;
     private String lineDirection;
-    private Boolean circleInward;
+    private String circleInward;
     private Float circleStartAngle;
     private Float circleCoeffsX;
     private Float circleCoeffsY;
     private Float circleCoeffsRadius;
-    private Boolean rectInward;
+    private String rectInward;
     private Float rectCoeffsPoint1X;
     private Float rectCoeffsPoint1Y;
     private Float rectCoeffsPoint2X;
@@ -26,5 +26,5 @@ public class PostPropertyReq {
     private Float rectCoeffsPoint4Y;
     private Float rectCoeffsRot;
     private Boolean bottomAuto;
-    private Boolean bottomWhole;
+    private String bottomWhole;
 }

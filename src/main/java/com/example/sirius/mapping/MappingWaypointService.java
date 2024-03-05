@@ -37,7 +37,7 @@ public class MappingWaypointService {
         MappingWayPointEntity mappingWayPointEntity = MappingWayPointEntity.from(postMappingWaypointReq, mappingEntity);
         Integer id = mappingWaypointRepository.save(mappingWayPointEntity).getId();
 
-        return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(id)+"번 waypoint가 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED,mappingWayPointEntity);
     }
 
     public BaseResponse deleteMappingWayPoint(Integer waypoint_id,Integer mappingId) {

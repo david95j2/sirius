@@ -19,4 +19,5 @@ public class GetPictureRes {
     private Float roll;
     private Float pitch;
     private Float yaw;
+    private Boolean crack;
 }

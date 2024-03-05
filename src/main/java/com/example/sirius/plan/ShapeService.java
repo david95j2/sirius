@@ -36,7 +36,11 @@ public class ShapeService {
         PropertyEntity propertyEntity = createPropertyFromRequest(postShapeAndPropertyReq, shapeEntity);
         propertyRepository.save(propertyEntity);
 
-        return new BaseResponse(ErrorCode.CREATED, createdNum);
+        shapeEntity.setId(createdNum);
+        shapeEntity.setPropertyEntity(propertyEntity);
+
+        return new BaseResponse(ErrorCode.CREATED, shapeEntity.toDto());
+//        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(createdNum)+"번 도형이 생성되었습니다.");
     }
     @Transactional
     public BaseResponse patchShape(PatchShapeAndPropertyReq patchShapeAndPropertyReq, Integer shapeId, Integer missionId) {
@@ -139,9 +143,11 @@ public class ShapeService {
 
     @Transactional
     public BaseResponse deleteShape(Integer shapeId, Integer missionId) {
-        PropertyEntity propertyEntity = (PropertyEntity) getShapeById(shapeId, missionId).getResult();
+//        PropertyEntity propertyEntity = (PropertyEntity) getShapeById(shapeId, missionId).getResult();
+        ShapeEntity shapeEntity = shapeRepository.findByIdAndMissionId(shapeId,missionId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+
         shapeRepository.deleteById(shapeId);
-        propertyRepository.delete(propertyEntity);
+        propertyRepository.delete(shapeEntity.getPropertyEntity());
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(shapeId)+"번 도형이 삭제되었습니다.");
     }
 
@@ -150,7 +156,7 @@ public class ShapeService {
                         .shapeEntity(shapeEntity).build();
 
         switch (request.getShape()) {
-            case "rectangle":
+            case "Rectangle":
                 checkNotNull(request.getRect_inward(), "rect_inward");
                 checkNotNull(request.getRectCoeffsPoint1X(), "rectCoeffsPoint1X");
                 checkNotNull(request.getRectCoeffsPoint1Y(), "rectCoeffsPoint1Y");
@@ -173,13 +179,13 @@ public class ShapeService {
                 propertyEntity.setRectCoeffsPoint4Y(request.getRectCoeffsPoint4Y());
                 propertyEntity.setRectCoeffsRot(request.getRect_coeffs_rot());
                 break;
-            case "line":
+            case "Line":
                 checkNotNull(request.getLine_auto(), "line_auto");
                 checkNotNull(request.getLine_direction(), "line_direction");
                 propertyEntity.setLineAuto(request.getLine_auto());
                 propertyEntity.setLineDirection(request.getLine_direction());
                 break;
-            case "circle":
+            case "Circle":
                 checkNotNull(request.getCircle_inward(), "circle_inward");
                 checkNotNull(request.getCircle_start_angle(), "circle_start_angle");
                 checkNotNull(request.getCircle_coeffs_x(), "circle_coeffs_x");
@@ -191,13 +197,13 @@ public class ShapeService {
                 propertyEntity.setCircleCoeffsY(request.getCircle_coeffs_y());
                 propertyEntity.setCircleCoeffsRadius(request.getCircle_coeffs_radius());
                 break;
-            case "bottom":
+            case "Underside":
                 checkNotNull(request.getBottom_auto(), "bottom_auto");
                 checkNotNull(request.getBottom_whole(), "bottom_whole");
                 propertyEntity.setBottomAuto(request.getBottom_auto());
                 propertyEntity.setBottomWhole(request.getBottom_whole());
                 break;
-            case "waypoint" : case "Merged Circle": case "Merged Rectangle": case "abutment":
+            case "Waypoints" : case "Merged Circle": case "Merged Rectangle": case "Abutment":
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_INPUT);

@@ -21,6 +21,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.example.sirius.album.picture.domain.QPictureEntity.pictureEntity;
 
@@ -102,7 +104,7 @@ public class AlbumService {
             throw new AppException(ErrorCode.METHOD_NOT_ALLOWED);
         }
         albumRepository.save(albumEntity);
-        return new BaseResponse(ErrorCode.ACCEPTED, Integer.valueOf(albumId) + "번 앨범의 값이 변경되었습니다.");
+        return new BaseResponse(ErrorCode.ACCEPTED, albumEntity.toDto());
     }
 
     @Transactional
@@ -145,7 +147,19 @@ public class AlbumService {
         }
 
         List<PictureEntity> results = query.fetch();
+
+
         List<GetPictureRes> new_results = results.stream().map(PictureEntity::toDto).collect(Collectors.toList());
+
+        new_results.stream().forEach(x -> {
+            String fileName = FilenameUtils.removeExtension(x.getFileName())+".png";
+
+            List<SegmentationEntity> iscracked = segmentationRepository.findPartByFileName(fileName);
+            if (iscracked.size() != 0) {
+                x.setCrack(true);
+            }
+
+        });
         return new BaseResponse(ErrorCode.SUCCESS, new_results);
     }
 
@@ -217,7 +231,7 @@ public class AlbumService {
     }
 
     @Transactional
-    public ResponseEntity<BaseResponse> deletePicture(Integer pictureId) {
+    public BaseResponse deletePicture(Integer pictureId) {
         // 분석결과 있으면 지우기
         PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
 
@@ -230,6 +244,17 @@ public class AlbumService {
         // 사진 지우기
         pictureRepository.delete(pictureEntity);
 
-        return new ResponseEntity<>(new BaseResponse(Integer.valueOf(pictureId)+"번 사진이 삭제되었습니다."), HttpStatus.CREATED);
+        return new BaseResponse(ErrorCode.SUCCESS,Integer.valueOf(pictureId)+"번 사진이 삭제되었습니다.");
+    }
+
+    public String getAlbumPathById(Integer album_id) {
+        albumRepository.findById(album_id).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        Pageable topOne = PageRequest.of(0, 1);
+        List<String> albumlist = albumRepository.findAlbumPathById(album_id,topOne);
+        String albumPath = albumlist.isEmpty() ? null : albumlist.get(0);
+        if (albumPath == null){
+            new AppException(ErrorCode.INTERNAL_DB_ERROR);
+        }
+        return Paths.get(albumPath).getParent().toString();
     }
 }

@@ -1,4 +1,4 @@
-package com.example.sirius.websocket.domain;
+package com.example.sirius.websocket;
 
 
 import com.example.sirius.album.analysis.SegmentationRepository;
@@ -39,9 +39,8 @@ public class ModifySegWebSocketHandler extends AbstractWebSocketHandler {
             return;
         }
 
-        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
-
         // Run modifier.py
+        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
         String scriptPath = "/home/sb/Desktop/vsc/0926koceti/analyzer_cracks/modifier.py";
         List<String> args = Arrays.asList("--remove_id", removeIdString, "--mask_path", segmentationEntity.getMaskFilePath());
         String modifyResult = SiriusUtils.executePythonScript(pythonPath, scriptPath, args,scriptPath.split("/")[scriptPath.split("/").length - 1], null);

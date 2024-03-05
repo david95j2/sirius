@@ -20,7 +20,7 @@ public class PropertyEntity {
     @Column(name = "line_direction")
     private String lineDirection;
     @Column(name = "circle_inward")
-    private Boolean circleInward;
+    private String circleInward;
     @Column(name = "circle_start_angle")
     private Float circleStartAngle;
     @Column(name = "circle_coeffs_x")
@@ -30,7 +30,7 @@ public class PropertyEntity {
     @Column(name = "circle_coeffs_radius")
     private Float circleCoeffsRadius;
     @Column(name = "rect_inward")
-    private Boolean rectInward;
+    private String rectInward;
     @Column(name = "rect_coeffs_point1_x")
     private Float rectCoeffsPoint1X;
     @Column(name = "rect_coeffs_point1_y")
@@ -52,7 +52,7 @@ public class PropertyEntity {
     @Column(name = "bottom_auto")
     private Boolean bottomAuto;
     @Column(name = "bottom_whole")
-    private Boolean bottomWhole;
+    private String bottomWhole;
 
     @JsonBackReference
     @OneToOne

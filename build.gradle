@@ -32,17 +32,22 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+//    testImplementation 'org.springframework.security:spring-security-test'
 
-    // 외부 라이브러리
+    // 추가 설치
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.1'    /* thumbnailator */
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'commons-io:commons-io:2.6'
     implementation group: 'com.drewnoakes', name: 'metadata-extractor', version: '2.6.2' /* extract image metadata */
     implementation 'org.json:json:20210307' /* extract json data */
-    implementation 'org.apache.commons:commons-math3:3.6.1' /* quaternion to euler */
+    implementation 'org.apache.commons:commons-math3:3.6.1' /* For quaternion to euler */
     implementation 'org.apache.commons:commons-compress:1.21' /* unzip */
     implementation 'org.springframework:spring-messaging' /* websocket client messaging */
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-imaging
+    implementation group: 'org.apache.commons', name: 'commons-imaging', version: '1.0-alpha3'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.2'
+
 
     // QueryDSL 설정
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'

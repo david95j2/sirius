@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter @Setter
 public class GetPropertyRectRes implements PropertyDto {
     private Integer id;
-    private Boolean rectInward;
+    private String rectInward;
     private Float rectCoeffsPoint1X;
     private Float rectCoeffsPoint1Y;
     private Float rectCoeffsPoint2X;

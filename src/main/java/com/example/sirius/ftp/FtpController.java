@@ -26,5 +26,6 @@ public class FtpController {
     @PostMapping("api/users/{login_id}/maps/ftp/url/success")
     public BaseResponse postMapURLSuccess(@PathVariable String login_id, @Valid @RequestBody PostMapURLSuccess postMapURLSuccess) {
         return ftpService.postMapURLSuccess(postMapURLSuccess,login_id);
+
     }
 }

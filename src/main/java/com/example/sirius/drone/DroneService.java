@@ -8,6 +8,7 @@ import com.example.sirius.drone.domain.PostDroneReq;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.user.UserRepository;
 import com.example.sirius.user.UserService;
 import com.example.sirius.user.domain.UserEntity;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class DroneService {
     private DroneRepository droneRepository;
+    private UserRepository userRepository;
     private UserService userService;
     public BaseResponse getDrones(String login_id) {
         userService.getUserByLoginId(login_id);
@@ -36,10 +38,10 @@ public class DroneService {
     }
 
     public BaseResponse postDrone(@Valid PostDroneReq postDroneReq, String login_id) {
-        UserEntity userEntity = (UserEntity) userService.getUserByLoginId(login_id).getResult();
+        UserEntity userEntity = userRepository.findByLoginId(login_id).orElseThrow(()->new AppException(ErrorCode.NOT_FOUND));
         DroneEntity droneEntity = DroneEntity.from(postDroneReq,userEntity);
         Integer drone_id = droneRepository.save(droneEntity).getId();
-        return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(drone_id)+"번 드론이 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED,droneEntity.toDto());
     }
 
     public BaseResponse patchDroneById(PatchDroneReq patchDroneReq, Integer drone_id, String login_id) {

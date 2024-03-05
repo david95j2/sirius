@@ -31,6 +31,14 @@ public interface SegmentationRepository extends JpaRepository<SegmentationEntity
     @Query("delete from SegmentationEntity s where s.drawFilePath=:fileName")
     Integer deleteByFileName(@Param("fileName") String fileName);
 
+    // origin
     @Query("select s from SegmentationEntity s where s.drawFilePath=:originFileName")
     Optional<SegmentationEntity> findByFileName(@Param("originFileName") String originFileName);
+
+    @Query("select s from SegmentationEntity s where s.drawFilePath like %:originFileName%")
+    List<SegmentationEntity> findPartByFileName(@Param("originFileName") String originFileName);
+
+    // tesmp
+    @Query("select s from SegmentationEntity s where s.drawFilePath=:originFileName")
+    List<SegmentationEntity> findByFileNameList(@Param("originFileName") String originFileName);
 }

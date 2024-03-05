@@ -32,12 +32,12 @@ public class PostShapeAndPropertyReq {
 
     private Boolean line_auto;
     private String line_direction;
-    private Boolean circle_inward;
+    private String circle_inward;
     private Float circle_start_angle;
     private Float circle_coeffs_x;
     private Float circle_coeffs_y;
     private Float circle_coeffs_radius;
-    private Boolean rect_inward;
+    private String rect_inward;
     private Float rectCoeffsPoint1X;
     private Float rectCoeffsPoint1Y;
     private Float rectCoeffsPoint2X;
@@ -48,5 +48,5 @@ public class PostShapeAndPropertyReq {
     private Float rectCoeffsPoint4Y;
     private Float rect_coeffs_rot;
     private Boolean bottom_auto;
-    private Boolean bottom_whole;
+    private String bottom_whole;
 }

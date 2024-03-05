@@ -55,12 +55,21 @@ public class FacilityService {
             patchFacilityReq.setLongitude(postFacilityReq.getLongitude());
             return patchFacility(patchFacilityReq, comparedName.getId(),loginId,true);
         } else { // 장소가 없으면 post
-            String unicode = SiriusUtils.stringToUnicode(postFacilityReq.getLocation()).replace("\\","");
-            postFacilityReq.setLocationAscii(unicode);
-            FacilityEntity facilityEntity = FacilityEntity.from(postFacilityReq,userEntity);
-            facilityRepository.save(facilityEntity).getId();
-            PatchFacilityRes patchFacilityRes = facilityEntity.toDto();
-            return new BaseResponse(ErrorCode.CREATED, patchFacilityRes);
+            if (postFacilityReq.getLocation() == null && postFacilityReq.getName() == null) {
+                FacilityEntity facilityEntity = FacilityEntity.from_null(userEntity);
+                facilityRepository.save(facilityEntity).getId();
+                PatchFacilityRes patchFacilityRes = facilityEntity.toDto();
+                return new BaseResponse(ErrorCode.CREATED, patchFacilityRes);
+            } else {
+                String unicode = SiriusUtils.stringToUnicode(postFacilityReq.getLocation()).replace("\\","");
+                postFacilityReq.setLocationAscii(unicode);
+                FacilityEntity facilityEntity = FacilityEntity.from(postFacilityReq,userEntity);
+                facilityRepository.save(facilityEntity).getId();
+                PatchFacilityRes patchFacilityRes = facilityEntity.toDto();
+                return new BaseResponse(ErrorCode.CREATED, patchFacilityRes);
+            }
+
+
         }
     }
 

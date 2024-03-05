@@ -65,7 +65,8 @@ public enum ErrorCode {
     /*
      * 500 INTERNAL_SERVER_ERROR: 내부 서버 오류
      */
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER ERROR");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER ERROR"),
+    INTERNAL_DB_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Album안에 사진이 존재하지 않습니다. 확인 예정");
 
     private final HttpStatus status;
     private final String message;

@@ -1,4 +1,4 @@
-package com.example.sirius.websocket.domain;
+package com.example.sirius.websocket;
 
 
 import com.example.sirius.websocket.AbstractWebSocketHandler;

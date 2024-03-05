@@ -36,6 +36,11 @@ public class AlbumController {
         return albumService.getAlbumById(album_id,mission_id);
     }
 
+//    @GetMapping("api/report/maps/missions/albums/{album_id}")
+//    public ResponseEntity<?> getAlbumById(@PathVariable Integer album_id) {
+//        return ResponseEntity.ok(albumService.getAlbumPathById(album_id));
+//    }
+
 //    @PostMapping("api/report/maps/missions/{mission_id}/albums")
 //    public BaseResponse postAlbum(@PathVariable Integer mission_id, @Valid @RequestBody PostAlbumReq postAlbumReq) {
 //        return albumService.postAlbum(postAlbumReq,mission_id);
@@ -89,19 +94,25 @@ public class AlbumController {
     }
 
     @GetMapping("api/report/maps/missions/albums/pictures/{picture_id}/files")
-    public ResponseEntity<InputStreamResource> getPictureFileById(@PathVariable Integer picture_id) throws IOException {
+    public ResponseEntity<InputStreamResource> getPictureFileById(@PathVariable Integer picture_id, @RequestParam(required = false) Boolean resize) throws Exception {
         Resource file = albumService.getPictureFileById(picture_id);
-        return SiriusUtils.getFile(file, false);
+        if (resize == null) {
+            resize = false;
+        }
+//        return SiriusUtils.getFile(file, false, resize);
+        return SiriusUtils.resizeImageWithMetadataAndSend(file, resize);
     }
+
+
 
     @GetMapping("api/report/maps/missions/albums/pictures/{picture_id}/files/thumbnails")
     public ResponseEntity<InputStreamResource> getPictureThumbnailById(@PathVariable Integer picture_id) throws IOException {
         Resource file = albumService.getPictureFileById(picture_id);
-        return SiriusUtils.getFile(file, true);
+        return SiriusUtils.getFile(file, true, false);
     }
 
     @DeleteMapping("api/report/maps/missions/albums/{album_id}/pictures/{picture_id}")
-    public ResponseEntity<BaseResponse> deletePicture(@PathVariable Integer album_id,@PathVariable Integer picture_id) {
+    public BaseResponse deletePicture(@PathVariable Integer album_id,@PathVariable Integer picture_id) {
         return albumService.deletePicture(picture_id);
     }
 }

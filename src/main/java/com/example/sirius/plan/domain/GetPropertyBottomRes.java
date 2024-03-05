@@ -7,5 +7,5 @@ import lombok.Setter;
 public class GetPropertyBottomRes implements PropertyDto{
     private Integer id;
     private Boolean bottomAuto;
-    private Boolean bottomWhole;
+    private String bottomWhole;
 }

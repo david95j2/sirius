@@ -1,8 +1,6 @@
 package com.example.sirius.album.analysis;
 
-import com.example.sirius.album.analysis.domain.AnalysisEntity;
-import com.example.sirius.album.analysis.domain.PostAnalysisReq;
-import com.example.sirius.album.analysis.domain.SegmentationEntity;
+import com.example.sirius.album.analysis.domain.*;
 import com.example.sirius.album.picture.AlbumRepository;
 import com.example.sirius.album.picture.AlbumService;
 import com.example.sirius.album.picture.PictureRepository;
@@ -35,6 +33,7 @@ public class AnalysisService {
     private SegmentationRepository segmentationRepository;
     private AlbumRepository albumRepository;
     private PictureRepository pictureRepository;
+    private AlbumService albumService;
 
     public BaseResponse getAnalyses(Integer albumId) {
         List<AnalysisEntity> results = analysisRepository.findAllByAlbumId(albumId);
@@ -47,53 +46,71 @@ public class AnalysisService {
     }
 
     public BaseResponse postAnalysis(PostAnalysisReq postAnalysisReq, Integer albumId) {
-
         AlbumEntity albumEntity = albumRepository.findById(albumId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
         AnalysisEntity analysisEntity = AnalysisEntity.from(postAnalysisReq,albumEntity);
         Integer createdNum = analysisRepository.save(analysisEntity).getId();
 
-        if (postAnalysisReq.getAi_type().equals("segmentation")) {
-            // segmentation 분석 시작
-            String venvPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python";
-            String pythonPath = "";
-
-
-            ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
-            localExecutorService.execute(() -> {
-                // 비동기
-                ProcessBuilder processBuilder = new ProcessBuilder();
-                processBuilder.command(venvPath);
-
-                try {
-                    Process process = processBuilder.start();
-                    int exitCode = process.waitFor();
-                    log.info("[Python Program] Exited with code: " + exitCode);
-
-                } catch (IOException | InterruptedException e) {
-                    log.error("[Python Program] Error occurred while executing external process",e);
-                }
-            });
-            localExecutorService.shutdown();
-
-            // 분석 완료
-            AnalysisEntity createdAnalysisEntity = analysisRepository.findById(createdNum).orElse(null);
-            if (createdAnalysisEntity == null) {
-                log.warn("Attempted analysis for album {}, but couldn't find analysis table number {}", albumId, createdNum);
-            } else {
-                patchAnalysis(createdAnalysisEntity);
-            }
+        if (postAnalysisReq.getAi_type().equals("itwin")) {
+            return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(albumId)+"번 앨범 분석을 시작합니다. 분석 id="+Integer.valueOf(createdNum)+","+"album_path="+albumService.getAlbumPathById(albumId));
         } else {
-            // detection 분석 시작
-            // 분석 완료
+            return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(albumId)+"번 앨범 분석을 시작합니다. 분석 id="+Integer.valueOf(createdNum));
         }
-
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(albumId)+"번 앨범 분석을 시작합니다. 분석 id="+Integer.valueOf(createdNum));
     }
 
-    private void patchAnalysis(AnalysisEntity analysisEntity) {
-        analysisEntity.setStatus(1);
+    public BaseResponse patchAnalysisById(PatchAnalysisReq patchAnalysisReq, Integer albumId, Integer analysisId) {
+        AnalysisEntity analysisEntity = analysisRepository.findByIdAndAlbumId(analysisId,albumId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        analysisEntity.setStatus(patchAnalysisReq.getStatus());
         analysisRepository.save(analysisEntity);
+        return new BaseResponse(ErrorCode.ACCEPTED,analysisEntity.toDto());
     }
+
+
+//    public BaseResponse postAnalysis(PostAnalysisReq postAnalysisReq, Integer albumId) {
+//
+//        AlbumEntity albumEntity = albumRepository.findById(albumId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+//        AnalysisEntity analysisEntity = AnalysisEntity.from(postAnalysisReq,albumEntity);
+//        Integer createdNum = analysisRepository.save(analysisEntity).getId();
+//
+//        if (postAnalysisReq.getAi_type().equals("segmentation")) {
+//            // segmentation 분석 시작
+//            String venvPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python";
+//            String pythonPath = "";
+//
+//            ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
+//            localExecutorService.execute(() -> {
+//                ProcessBuilder processBuilder = new ProcessBuilder();
+//                processBuilder.command(venvPath);
+//
+//                try {
+//                    Process process = processBuilder.start();
+//                    int exitCode = process.waitFor();
+//                    log.info("[Python Program] Exited with code: " + exitCode);
+//
+//                } catch (IOException | InterruptedException e) {
+//                    log.error("[Python Program] Error occurred while executing external process",e);
+//                }
+//            });
+//            localExecutorService.shutdown();
+//
+//            // 분석 완료
+//            AnalysisEntity createdAnalysisEntity = analysisRepository.findById(createdNum).orElse(null);
+//            if (createdAnalysisEntity == null) {
+//                log.warn("Attempted analysis for album {}, but couldn't find analysis table number {}", albumId, createdNum);
+//            } else {
+//                patchAnalysis(createdAnalysisEntity);
+//            }
+//        } else {
+//            // detection 분석 시작
+//            // 분석 완료
+//        }
+//
+//        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(albumId)+"번 앨범 분석을 시작합니다. 분석 id="+Integer.valueOf(createdNum));
+//    }
+
+//    private void patchAnalysis(AnalysisEntity analysisEntity) {
+//        analysisEntity.setStatus(1);
+//        analysisRepository.save(analysisEntity);
+//    }
 
     public BaseResponse deleteAnalysis(Integer analysisId, Integer albumId) {
         AnalysisEntity analysisEntity = analysisRepository.findByIdAndAlbumId(analysisId, albumId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
@@ -116,7 +133,10 @@ public class AnalysisService {
 
         String origin_file_name = pictureEntity.getFilePath().replace(FileNameUtils.getExtension(pictureEntity.getFilePath()),"png");
         origin_file_name = origin_file_name.replace("origin","result/drawImage");
-        SegmentationEntity segmentationEntity = segmentationRepository.findByFileName(origin_file_name).orElse(null);
+//        SegmentationEntity segmentationEntity = segmentationRepository.findByFileName(origin_file_name).orElse(null); // origin
+        System.out.println((origin_file_name));
+        List<SegmentationEntity> results = segmentationRepository.findByFileNameList(origin_file_name);
+        SegmentationEntity segmentationEntity = results.get(0);
         if (segmentationEntity == null) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
         }
@@ -134,4 +154,5 @@ public class AnalysisService {
 
         return null;
     }
+
 }

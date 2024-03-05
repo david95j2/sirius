@@ -1,5 +1,6 @@
 package com.example.sirius.album.picture.domain;
 
+import com.example.sirius.album.analysis.SegmentationRepository;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -79,6 +80,8 @@ public class PictureEntity {
         getPictureRes.setRoll(this.roll);
         getPictureRes.setPitch(this.pitch);
         getPictureRes.setYaw(this.yaw);
+        getPictureRes.setCrack(false);
         return getPictureRes;
     }
+
 }

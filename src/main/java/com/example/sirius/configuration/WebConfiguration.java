@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.Validator;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -28,6 +29,24 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Value("${webgcs.cors.user.4}")
     private String user4Ip;
 
+    @Value("${webgcs.cors.user.5}")
+    private String user5Ip;
+
+    @Value("${webgcs.cors.user.6}")
+    private String user6Ip;
+
+    @Value("${webgcs.cors.user.7}")
+    private String user7Ip;
+
+    @Value("${webgcs.cors.user.8}")
+    private String user8Ip;
+
+    @Value("${webgcs.cors.user.9}")
+    private String user9Ip;
+
+    @Value("${webgcs.cors.user.10}")
+    private String user10Ip;
+
     @Value("${ftp.ip}")
     private String ftpIp;
 
@@ -43,7 +62,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // 모든 요청 경로에 대해
-                .allowedOrigins(user1Ip, user2Ip,user3Ip,user4Ip)
+                .allowedOrigins(user1Ip, user2Ip,user3Ip,user4Ip,user5Ip,user6Ip,user7Ip,user8Ip,user9Ip,user10Ip)
                 .allowedMethods(ALLOWED_METHOD_NAMES.split(","));
     }
 }

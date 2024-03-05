@@ -10,6 +10,16 @@ import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
+
+
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
@@ -17,31 +27,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandler;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.Transport;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +55,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class SiriusUtils {
+    private static final String EXIF_TOOL_PATH = "exiftool";
     public static Resource loadFileAsResource(String filePath, String fileName) {
         try {
             Path fileStorageLocation = Paths.get(filePath).toAbsolutePath().normalize();
@@ -65,11 +71,9 @@ public class SiriusUtils {
         }
     }
 
-    public static ResponseEntity getFile(Resource file, Boolean isThumbnail) throws IOException {
+    public static ResponseEntity getFile(Resource file, Boolean isThumbnail, Boolean resize) throws IOException {
 
         String fileName = file.getFilename();
-//        System.out.println((file.contentLength() / 1024) / 1024 );
-        // Assume that the file extension is everything after the last dot
         String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
 
         String mediaType = getMediaTypeForExtension(fileExtension);
@@ -80,27 +84,28 @@ public class SiriusUtils {
         try {
             FileSystemResource resource;
             if (isThumbnail) {
-                // Create a temporary file to store the thumbnail
                 File thumbnail = File.createTempFile("thumbnail", "." + fileExtension);
                 try (InputStream in = new FileInputStream(file.getFile())) {
-                    // Use Thumbnailator to create the thumbnail
-                    Thumbnails.of(in)
-                            .size(320, 200)  // Set the dimensions of the thumbnail. Adjust as needed.
-                            .toFile(thumbnail);
+                    Thumbnails.of(in).size(320, 200).toFile(thumbnail);
                 }
                 resource = new FileSystemResource(thumbnail);
             } else {
-                resource = new FileSystemResource(file.getFile());
+                if (resize) {
+                    File resized = File.createTempFile("resized", "." + fileExtension);
+                    try (InputStream in = new FileInputStream(file.getFile())) {
+                        Thumbnails.of(in).size(2100, 1400).toFile(resized);
+                    }
+                    resource = new FileSystemResource(resized);
+                } else {
+                    resource = new FileSystemResource(file.getFile());
+                }
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()));
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.parseMediaType(mediaType))
-                    .body(resource);
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType(mediaType)).body(resource);
         } catch (IOException e) {
             throw new RuntimeException("Error while loading file " + fileName, e);
         }
@@ -136,7 +141,7 @@ public class SiriusUtils {
                         String key = parts[0].trim();
                         String value = parts[1].trim();
                         if ("number of pointcloud".equals(key)) {
-                            jsonObject.put(key, Integer.parseInt(value)); // 정수로 변환
+                            jsonObject.put(key, Integer.parseInt(value));
                         } else {
                             try {
                                 jsonObject.put(key, Float.parseFloat(value));
@@ -210,10 +215,10 @@ public class SiriusUtils {
             }
             readStream(process.getErrorStream(), "Error", true, type);
             int exitCode = process.waitFor();
-            log.info("[Python "+type+" Program] Exited with code: " + exitCode);
+            log.info("[Python " + type + " Program] Exited with code: " + exitCode);
 
         } catch (IOException | InterruptedException e) {
-            log.error("[Python "+type+" Program] Error occurred while executing external process", e);
+            log.error("[Python " + type + " Program] Error occurred while executing external process", e);
         }
         return output.toString();
     }
@@ -223,33 +228,22 @@ public class SiriusUtils {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (isError) {
-                    log.error("[Python "+scriptype+" Program] " + type + " message: " + line);
+                    log.error("[Python " + scriptype + " Program] " + type + " message: " + line);
                 } else {
-                    log.info("[Python "+scriptype+" Program] " + type + " message: " + line);
+                    log.info("[Python " + scriptype + " Program] " + type + " message: " + line);
                 }
             }
         } catch (IOException e) {
-            log.error("[Python "+scriptype+" Program] Error occurred while reading " + type + " stream", e);
+            log.error("[Python " + scriptype + " Program] Error occurred while reading " + type + " stream", e);
         }
     }
 
     public static List<String> listFilesInDirectoryNIO(String path) throws IOException {
-        return Files.list(Paths.get(path))
-                .filter(Files::isRegularFile)
-                .sorted()
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .collect(Collectors.toList());
+        return Files.list(Paths.get(path)).filter(Files::isRegularFile).sorted().map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
     }
 
     public static List<String> listFilesMatchingPattern(String path, String pattern) throws IOException {
-        return Files.list(Paths.get(path))
-                .filter(Files::isRegularFile)
-                .filter(p -> p.toString().matches(pattern))
-                .sorted()
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .collect(Collectors.toList());
+        return Files.list(Paths.get(path)).filter(Files::isRegularFile).filter(p -> p.toString().matches(pattern)).sorted().map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
     }
 
     public static JSONObject validateMessageForAlbumId(String payload, WebSocketSession session) throws Exception {
@@ -364,4 +358,51 @@ public class SiriusUtils {
 
         return unicodeToString(sb.toString());
     }
+
+    public static ResponseEntity<InputStreamResource> resizeImageWithMetadataAndSend(Resource originalImageResource, boolean resize) throws IOException, InterruptedException {
+        File originalImage = originalImageResource.getFile();
+        String originalFileName = originalImage.getName();
+
+        Path tempDir = Files.createTempDirectory("resized-images");
+        File processedImage = new File(tempDir.toFile(), originalFileName);
+
+        if (resize) {
+            // 이미지 리사이즈
+            BufferedImage inputImage = ImageIO.read(originalImage);
+            BufferedImage outputImage = new BufferedImage(2100, 1400, inputImage.getType());
+            Graphics2D g2d = outputImage.createGraphics();
+            g2d.drawImage(inputImage, 0, 0, 2100, 1400, null);
+            g2d.dispose();
+            ImageIO.write(outputImage, "JPEG", processedImage);
+
+            // ExifTool을 사용하여 원본 메타데이터 복사
+            copyMetadataWithExifTool(originalImage, processedImage);
+
+            // 이미지의 가로세로를 업데이트
+            updateDimensionsWithExifTool(processedImage, 2100, 1400);
+        } else {
+            // 리사이즈하지 않는 경우, 원본 이미지를 그대로 사용
+            Files.copy(originalImage.toPath(), processedImage.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processedImage.getName() + "\"");
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(processedImage));
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("image/jpeg"))
+                .body(resource);
+    }
+
+    private static void copyMetadataWithExifTool(File source, File destination) throws IOException, InterruptedException {
+        String command = String.format("%s -TagsFromFile %s %s", EXIF_TOOL_PATH, source.getAbsolutePath(), destination.getAbsolutePath());
+        Runtime.getRuntime().exec(command).waitFor();
+    }
+
+    private static void updateDimensionsWithExifTool(File image, int width, int height) throws IOException, InterruptedException {
+        String command = String.format("%s -ImageWidth=%d -ImageHeight=%d %s", EXIF_TOOL_PATH, width, height, image.getAbsolutePath());
+        Runtime.getRuntime().exec(command).waitFor();
+    }
+
 }

@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter @Setter
 public class GetPropertyCircleRes implements PropertyDto {
     private Integer id;
-    private Boolean circleInward;
+    private String circleInward;
     private Float circleStartAngle;
     private Float circleCoeffsX;
     private Float circleCoeffsY;

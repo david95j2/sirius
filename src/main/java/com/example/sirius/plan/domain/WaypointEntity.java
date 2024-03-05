@@ -2,8 +2,13 @@ package com.example.sirius.plan.domain;
 
 import com.example.sirius.mapping.domain.MappingEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "waypoints")
@@ -29,6 +34,10 @@ public class WaypointEntity {
     @Column(name = "group_num")
     private Integer groupNum;
     private Integer pitch;
+    @Column(name = "gimbal_pitch_array")
+    private String gimbalPitchArray;
+    @Column(name = "camera_on")
+    private Boolean cameraOn;
 
     @JsonBackReference
     @ManyToOne
@@ -36,6 +45,13 @@ public class WaypointEntity {
     private ShapeEntity shapeEntity;
 
     public static WaypointEntity from(PostWaypointReq postWaypointReq, ShapeEntity shapeEntity) {
+        Integer pitch;
+        if (postWaypointReq.getPitch() == null) {
+            pitch = null;
+        } else {
+            pitch = postWaypointReq.getPitch();
+        }
+
         return WaypointEntity.builder()
                 .shapeEntity(shapeEntity)
                 .groupNum(postWaypointReq.getGroup_num())
@@ -46,7 +62,26 @@ public class WaypointEntity {
                 .yaw(postWaypointReq.getYaw())
                 .checked(postWaypointReq.getChecked())
                 .completed(postWaypointReq.getCompleted())
-                .pitch(postWaypointReq.getPitch())
+                .pitch(pitch)
+                .gimbalPitchArray(postWaypointReq.getGimbal_pitch_array_string())
+                .cameraOn(postWaypointReq.getCamera_on())
                 .build();
+    }
+
+    public GetWaypointRes toDto() {
+        GetWaypointRes getWaypointRes = new GetWaypointRes();
+        getWaypointRes.setId(this.id);
+        getWaypointRes.setSeq(this.seq);
+        getWaypointRes.setPos_x(this.posX);
+        getWaypointRes.setPos_y(this.posY);
+        getWaypointRes.setPos_z(this.posZ);
+        getWaypointRes.setYaw(this.yaw);
+        getWaypointRes.setChecked(this.checked);
+        getWaypointRes.setCompleted(this.completed);
+        getWaypointRes.setGroup_num(this.groupNum);
+        getWaypointRes.setPitch(this.pitch);
+        getWaypointRes.setGimbal_pitch_array(this.gimbalPitchArray);
+        getWaypointRes.setCamera_on(this.cameraOn);
+        return getWaypointRes;
     }
 }

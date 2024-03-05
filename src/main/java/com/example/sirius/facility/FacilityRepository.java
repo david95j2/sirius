@@ -2,7 +2,6 @@ package com.example.sirius.facility;
 
 import com.example.sirius.facility.domain.FacilityEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,6 +18,6 @@ public interface FacilityRepository extends JpaRepository<FacilityEntity,Integer
     @Query("select f from FacilityEntity f join f.userEntity u where f.name=:name and f.location=:location")
     Optional<FacilityEntity> findByNameAndLoginId(@Param("name") String name, @Param("location") String location);
 
-    @Query("select f from FacilityEntity f where f.location=:location")
-    Optional<FacilityEntity> findByLocation(@Param("location") String location);
+    @Query("select f from FacilityEntity f where f.location=:location and f.name=:site")
+    Optional<FacilityEntity> findByLocation(@Param("location") String location, @Param("site") String site);
 }

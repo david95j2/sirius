@@ -71,7 +71,7 @@ public class FtpService {
                 /* location & thumbnails post */
                 // facility 조회
 //                PatchFacilityRes patchFacilityRes = (PatchFacilityRes) facilityService.postFacility(PostFacilityReq.fromJSONObject(infoMap), loginId).getResult();
-                FacilityEntity facilityEntity = facilityRepository.findByLocation(postMapURLSuccess.getLocation()).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+                FacilityEntity facilityEntity = facilityRepository.findByLocation(postMapURLSuccess.getLocation(),infoMap.getString("site")).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
                 location_id = facilityEntity.getId();
                 for (File file : files) {
                     // thumbnails 생성

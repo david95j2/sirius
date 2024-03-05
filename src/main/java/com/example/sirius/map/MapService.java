@@ -128,7 +128,7 @@ public class MapService {
     @Transactional
     public BaseResponse deleteMap(Integer facilityId, Integer mapId) {
 
-        MapGroupEntity mapGroupEntity = mapGroupRepository.findByIdAndFacilityId(mapId,facilityId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        MapGroupEntity mapGroupEntity = mapGroupRepository.findByMapIdAndFacilityId(mapId,facilityId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         // 맵 있으면 지우기
         mapRepository.deleteAllByMapGroupId(mapGroupEntity.getId());
@@ -137,5 +137,19 @@ public class MapService {
         // 맵 그룹있으면 지우기
         mapGroupRepository.delete(mapGroupEntity);
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(mapId)+"번 맵이 삭제되었습니다.");
+    }
+
+    public BaseResponse getMapById(Integer mapId) {
+        MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+        String fileName = Paths.get(mapEntity.getMapPath()).getFileName().toString();
+        GetMapsRes getMapsRes = new GetMapsRes();
+        getMapsRes.setId(mapEntity.getId());
+        getMapsRes.setFile_path(fileName);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime combinedDateTime = LocalDateTime.of(mapEntity.getDate(), mapEntity.getTime());
+        String formattedDate = combinedDateTime.format(formatter);
+        getMapsRes.setRegdate(formattedDate);
+
+        return new BaseResponse(ErrorCode.SUCCESS, getMapsRes);
     }
 }

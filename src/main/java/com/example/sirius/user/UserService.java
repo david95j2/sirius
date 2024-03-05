@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 public class UserService {
     private UserRepository userRepository;
 
-    public ResponseEntity<BaseResponse> getUsers() {
+    public BaseResponse getUsers() {
         List<UserEntity> results = userRepository.findAll();
         List<GetUsersRes> new_results = results.stream().map(UserEntity::toDto).collect(Collectors.toList());
-        return new ResponseEntity<>(new BaseResponse(new_results),HttpStatus.OK);
+        return new BaseResponse(ErrorCode.SUCCESS,new_results);
     }
 
     public BaseResponse getUserByLoginId(String loginId) {
@@ -46,7 +46,7 @@ public class UserService {
 
         UserEntity userEntity = UserEntity.from(postUserReq);
         Integer user_id = userRepository.save(userEntity).getId();
-        return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(user_id)+"번 유저가 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED,userEntity.toDto());
     }
 
     public BaseResponse postLogin(PostLoginReq postLoginReq) {

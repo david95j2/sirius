@@ -22,6 +22,11 @@ public class MapController {
         return mapService.getMaps(facility_id,login_id,date,time);
     }
 
+    @GetMapping("api/report/{login_id}/facilities/{facility_id}/maps/{map_id}")
+    public BaseResponse getMapById(@PathVariable String login_id, @PathVariable Integer facility_id, @PathVariable Integer map_id) {
+        return mapService.getMapById(map_id);
+    }
+
     @DeleteMapping("api/report/{login_id}/facilities/{facility_id}/maps/{map_id}")
     public BaseResponse deleteMap(@PathVariable String login_id, @PathVariable Integer facility_id,@PathVariable Integer map_id) {
         return mapService.deleteMap(facility_id,map_id);
@@ -30,7 +35,7 @@ public class MapController {
     @GetMapping("api/report/maps/{map_id}/files")
     public ResponseEntity<InputStreamResource> getMapFileById(@PathVariable Integer map_id) throws IOException {
         Resource file =mapService.getMapFileById(map_id);
-        return SiriusUtils.getFile(file, false);
+        return SiriusUtils.getFile(file, false,false);
     }
 
 

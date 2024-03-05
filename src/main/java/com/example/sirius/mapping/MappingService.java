@@ -38,7 +38,7 @@ public class MappingService {
         FacilityEntity facilityEntity = facilityRepository.findById(facilityId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         MappingEntity mappingEntity = MappingEntity.from(postMappingReq, facilityEntity);
         Integer mission_id = mappingRepository.save(mappingEntity).getId();
-        return new BaseResponse(ErrorCode.CREATED, Integer.valueOf(mission_id) + "번 미션이 생성되었습니다.");
+        return new BaseResponse(ErrorCode.CREATED, mappingEntity.toDto());
     }
 
     public BaseResponse patchMapping(PatchMappingReq patchMappingReq, Integer missionId, Integer facilityId) {
@@ -48,9 +48,7 @@ public class MappingService {
             mappingEntity.setName(patchMappingReq.getName());
         }
 
-        // Save the updated entity
         MappingEntity updated = mappingRepository.save(mappingEntity);
-        ;
         return new BaseResponse(ErrorCode.ACCEPTED, updated.toDto());
     }
 

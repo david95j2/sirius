@@ -65,8 +65,12 @@ public class AnalysisEntity {
         getAnalysisRes.setRegdate(this.regdate.format(formatter));
         if (this.getStatus() == 1) {
             getAnalysisRes.setStatus("완료");
-        } else {
+        } else if (this.getStatus() == 2) {
+            getAnalysisRes.setStatus("에러");
+        } else if (this.getStatus() == 0) {
             getAnalysisRes.setStatus("진행중");
+        } else {
+            getAnalysisRes.setStatus("에러-정합");
         }
         getAnalysisRes.setAiType(this.aiType);
         return getAnalysisRes;

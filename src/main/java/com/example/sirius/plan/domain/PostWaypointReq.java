@@ -3,6 +3,9 @@ package com.example.sirius.plan.domain;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.json.simple.JSONObject;
+
+import java.util.List;
 
 @Getter @Setter
 public class PostWaypointReq {
@@ -22,6 +25,9 @@ public class PostWaypointReq {
     private Boolean completed;
     @NotNull(message = "Filed Name이 group_num 인지 확인하십시오.")
     private Integer group_num;
-    @NotNull(message = "Filed Name이 pitch 인지 확인하십시오.")
     private Integer pitch;
+    @NotNull(message = "Filed Name이 gimbal_pitch_array 인지 확인하십시오.")
+    private List<Integer> gimbal_pitch_array;
+    private Boolean camera_on;
+    private String gimbal_pitch_array_string;
 }

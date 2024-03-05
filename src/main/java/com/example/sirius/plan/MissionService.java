@@ -77,12 +77,11 @@ public class MissionService {
 
         MissionEntity mission = MissionEntity.from(postMissionReq, mapGroupEntity);
         Integer createdNum = missionRepository.save(mission).getId();
-        return new BaseResponse(ErrorCode.CREATED, createdNum);
+        return new BaseResponse(ErrorCode.CREATED, mission.toDto());
     }
 
     public BaseResponse patchMission(PatchMissionReq patchMissionReq, Integer missionId, Integer mapId) {
         MapEntity mapEntity = mapRepository.findById(mapId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
-
         MissionEntity missionEntity = missionRepository.findByIdAndMapGroupId(missionId, mapEntity.getMapGroupEntity().getId()).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
         if (patchMissionReq.getName() != null) {
@@ -92,7 +91,7 @@ public class MissionService {
             missionEntity.setGroupNum(patchMissionReq.getGroup_num());
         }
         Integer modifiedNum = missionRepository.save(missionEntity).getId();
-        return new BaseResponse(ErrorCode.ACCEPTED, Integer.valueOf(modifiedNum) + "번 미션의 값이 변경되었습니다.");
+        return new BaseResponse(ErrorCode.ACCEPTED, missionEntity.toDto());
     }
 
     @Transactional
@@ -141,7 +140,6 @@ public class MissionService {
         // c++ 키기
         ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
         localExecutorService.execute(() -> {
-            // 비동기
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("/home/sb/workspace/pcd-manager3/build/fit_area", mapEntity.getMapPath(),postFittingReq.getPort());
 

@@ -79,19 +79,19 @@ public class ShapeEntity {
         getShapeRes.setUpper_height(this.upperHegiht);
         getShapeRes.setLower_height(this.lowerHeight);
 
-        if (this.shape.equals("line")) {
+        if (this.shape.equals("Line")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toLineDto());
         }
-        if (this.shape.equals("circle")) {
+        if (this.shape.equals("Circle")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toCircleDto());
         }
-        if (this.shape.equals("rectangle")) {
+        if (this.shape.equals("Rectangle")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toRectDto());
         }
-        if (this.shape.equals("bottom")) {
+        if (this.shape.equals("Underside")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toBottomDto());
         }
-        if (this.shape.equals("abutment")) {
+        if (this.shape.equals("Abutment")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toAbutmentDto());
         }
         return getShapeRes;
