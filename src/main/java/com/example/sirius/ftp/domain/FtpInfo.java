@@ -9,4 +9,5 @@ public class FtpInfo {
     private String ftpPort;
     private String ftpId;
     private String ftpPassword;
+    private String url;
 }

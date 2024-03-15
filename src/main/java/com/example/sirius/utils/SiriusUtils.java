@@ -6,8 +6,10 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.example.sirius.album.analysis.domain.JsonModel;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.imaging.Imaging;
@@ -32,8 +34,10 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -100,7 +104,6 @@ public class SiriusUtils {
                     resource = new FileSystemResource(file.getFile());
                 }
             }
-
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()));
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
@@ -405,4 +408,31 @@ public class SiriusUtils {
         Runtime.getRuntime().exec(command).waitFor();
     }
 
+    public static void saveResizedImage(MultipartFile file, String os_path, int width, int height) {
+        try {
+            File outputFile = new File(Paths.get(os_path,file.getOriginalFilename()).toString());
+            File parentDir = outputFile.getParentFile();
+            if (!parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            Thumbnails.of(file.getInputStream())
+                    .size(width, height)
+                    .toFile(outputFile);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveFile(String jsonFileName, ArrayList<JsonModel> jsonModel) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            // JSON 객체를 파일로 저장
+            objectMapper.writeValue(new File(jsonFileName), jsonModel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

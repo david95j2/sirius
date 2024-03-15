@@ -17,6 +17,7 @@ public class PostFacilityReq {
 //    @NotNull(message = "경도는 필수 입력값입니다. 키가 longitude인지 확인해주세요.")
     private Float longitude;
     private String locationAscii;
+    private String description;
 
     public static PostFacilityReq fromJSONObject(JSONObject jsonObject) {
         PostFacilityReq request = new PostFacilityReq();

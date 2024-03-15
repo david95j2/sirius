@@ -65,15 +65,32 @@ public class PictureEntity {
                 .build();
     }
 
+    public static PictureEntity from(GetPictureRes model, AlbumEntity albumEntity) {
+
+        return PictureEntity.builder()
+                .albumEntity(albumEntity)
+                .filePath(model.getFileName())
+                .posX(model.getPosX())
+                .posY(model.getPosY())
+                .posZ(model.getPosZ())
+                .roll(model.getRoll())
+                .pitch(model.getPitch())
+                .yaw(model.getYaw())
+                .build();
+    }
+
+
     public GetPictureRes toDto() {
         GetPictureRes getPictureRes = new GetPictureRes();
         String fileName = Paths.get(this.filePath).getFileName().toString();
         getPictureRes.setId(this.id);
         getPictureRes.setFileName(fileName);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime combinedDateTime = LocalDateTime.of(this.date, this.time);
-        String formattedDate = combinedDateTime.format(formatter);
-        getPictureRes.setRegdate(formattedDate);
+        if (getPictureRes.getRegdate() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime combinedDateTime = LocalDateTime.of(this.date, this.time);
+            String formattedDate = combinedDateTime.format(formatter);
+            getPictureRes.setRegdate(formattedDate);
+        }
         getPictureRes.setPosX(this.posX);
         getPictureRes.setPosY(this.posY);
         getPictureRes.setPosZ(this.posZ);

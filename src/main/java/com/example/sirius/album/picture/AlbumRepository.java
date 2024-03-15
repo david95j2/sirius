@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface AlbumRepository extends JpaRepository<AlbumEntity, Integer> {
     @Query("select a from AlbumEntity a join a.missionEntity m " +
-            "where m.id=:missionId")
+            "where m.id=:missionId order by a.regdate asc")
     List<AlbumEntity> findByMissionId(@Param("missionId") Integer missionId);
 
     @Query("select a from AlbumEntity a join a.missionEntity m " +

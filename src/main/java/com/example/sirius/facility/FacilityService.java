@@ -16,12 +16,24 @@ import com.example.sirius.user.domain.GetUsersRes;
 import com.example.sirius.user.domain.UserEntity;
 import com.example.sirius.utils.SiriusUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class FacilityService {
@@ -86,6 +98,9 @@ public class FacilityService {
         if (patchFacilityReq.getLongitude() != null) {
             facilityEntity.setLongitude(patchFacilityReq.getLongitude());
         }
+        if (patchFacilityReq.getDescription() != null) {
+            facilityEntity.setDescription(patchFacilityReq.getDescription());
+        }
 
         FacilityEntity updated = facilityRepository.save(facilityEntity);
         PatchFacilityRes patchFacilityRes = updated.toDto();
@@ -129,5 +144,24 @@ public class FacilityService {
         } else {
             return -1;
         }
+    }
+
+    public BaseResponse postLocationThumbnail(MultipartFile file, Integer facilityId) {
+        FacilityEntity facilityEntity = facilityRepository.findById(facilityId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        Date now = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String formattedDate = sdf.format(now);
+        String url = facilityEntity.getUserEntity().getLoginId() + "/" + SiriusUtils.stringToUnicode(facilityEntity.getName()).replace("\\","") + "/" + formattedDate.split("_")[0] + "/" + formattedDate.split("_")[1]+"/pcd/samples";
+        String os_path = Paths.get("/hdd_ext/part6", "sirius",url).toString();
+
+        SiriusUtils.saveResizedImage(file, os_path, 320, 200);
+        PostThumbnails postThumbnails = new PostThumbnails();
+        postThumbnails.setFile_path(String.valueOf(Paths.get(os_path,file.getOriginalFilename())));
+        String thumb_datetime = formattedDate.split("_")[0] + "_" + formattedDate.split("_")[1];
+        postThumbnails.setRegdate(thumb_datetime);
+
+        ThumbnailEntity thumbnailEntity = ThumbnailEntity.from(postThumbnails, facilityEntity);
+        ThumbnailEntity createdThumbnailEntity = thumbnailRepository.save(thumbnailEntity);
+        return new BaseResponse(ErrorCode.CREATED, createdThumbnailEntity);
     }
 }

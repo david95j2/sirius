@@ -9,6 +9,7 @@ import com.example.sirius.album.picture.domain.PictureEntity;
 import com.example.sirius.exception.AppException;
 import com.example.sirius.exception.BaseResponse;
 import com.example.sirius.exception.ErrorCode;
+import com.example.sirius.map.domain.MapEntity;
 import com.example.sirius.utils.SiriusUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -131,11 +133,10 @@ public class AnalysisService {
     public Resource getSegmentationFile(Integer pictureId, String type) {
         PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        String origin_file_name = pictureEntity.getFilePath().replace(FileNameUtils.getExtension(pictureEntity.getFilePath()),"png");
-        origin_file_name = origin_file_name.replace("origin","result/drawImage");
+        String pattern = createSearchPattern(pictureEntity.getFilePath());
 //        SegmentationEntity segmentationEntity = segmentationRepository.findByFileName(origin_file_name).orElse(null); // origin
-        System.out.println((origin_file_name));
-        List<SegmentationEntity> results = segmentationRepository.findByFileNameList(origin_file_name);
+        System.out.println(pattern);
+        List<SegmentationEntity> results = segmentationRepository.findBySimilarPathPattern(pattern);
         SegmentationEntity segmentationEntity = results.get(0);
         if (segmentationEntity == null) {
             throw new AppException(ErrorCode.DATA_NOT_FOUND);
@@ -155,4 +156,48 @@ public class AnalysisService {
         return null;
     }
 
+    private String createSearchPattern(String originImageName) {
+        // "origin" 부분을 "result/json"으로 변경
+        String resultPathPattern = originImageName.replaceFirst("origin", "result/json");
+        // 파일 확장자 전에 오는 숫자 부분을 와일드카드로 대체 (예: _45_31.json -> _%.json)
+        resultPathPattern = resultPathPattern.replaceAll("_\\d+_\\d+\\.json$", "_%.json");
+        // 확장자가 .JPG인 경우, 파일 이름 바로 전의 숫자들을 와일드카드로 대체
+        resultPathPattern = resultPathPattern.replaceAll("\\.JPG$", "_%.json");
+        return resultPathPattern;
+    }
+
+    public void modifySegmentation(ArrayList<JsonModel> jsonModel, Integer pictureId) {
+        PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        MapEntity mapEntity = pictureEntity.getAlbumEntity().getMissionEntity().getMapGroupEntity().getMapEntities().get(0);
+        String pattern = createSearchPattern(pictureEntity.getFilePath());
+        List<SegmentationEntity> results = segmentationRepository.findBySimilarPathPattern(pattern);
+        SegmentationEntity segmentationEntity = results.get(0);
+        if (segmentationEntity == null) {
+            throw new AppException(ErrorCode.DATA_NOT_FOUND);
+        }
+
+        String jsonFileName = segmentationEntity.getJsonFilePath();
+        SiriusUtils.saveFile(jsonFileName, jsonModel);
+
+        // c++ 분석
+        ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
+        localExecutorService.execute(() -> {
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command("/home/sb/workspace/calc_dis/build/calcDistance",
+                    String.valueOf(1),
+                    pictureEntity.getFilePath(),
+                    mapEntity.getMapPath()
+                    );
+
+            try {
+                Process process = processBuilder.start();
+                int exitCode = process.waitFor();
+                log.info("[calcDistan Program Modify] Exited with code: " + exitCode);
+
+            } catch (IOException | InterruptedException e) {
+                log.error("[calcDistan Program Modify] Error occurred while executing external process",e);
+            }
+        });
+        localExecutorService.shutdown();
+    }
 }

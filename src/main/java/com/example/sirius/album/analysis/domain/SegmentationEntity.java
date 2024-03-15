@@ -1,5 +1,6 @@
 package com.example.sirius.album.analysis.domain;
 
+import com.example.sirius.album.picture.domain.PictureEntity;
 import com.example.sirius.plan.domain.MissionEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -10,7 +11,8 @@ import java.nio.file.Paths;
 @Entity
 @Table(name = "segmentations")
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SegmentationEntity {
@@ -30,12 +32,19 @@ public class SegmentationEntity {
     @JoinColumn(name = "analysis_id")
     private AnalysisEntity analysisEntity;
 
-    public static SegmentationEntity from(String jsonName, String drawName, String maskName, AnalysisEntity analysisEntity) {
+
+    //    public static SegmentationEntity from(String jsonName, String drawName, String maskName, AnalysisEntity analysisEntity) {
+//        return SegmentationEntity.builder()
+//                .analysisEntity(analysisEntity)
+//                .jsonFilePath(jsonName)
+//                .maskFilePath(maskName)
+//                .drawFilePath(drawName)
+//                .build();
+//    }
+    public static SegmentationEntity from(String jsonName, AnalysisEntity analysisEntity) {
         return SegmentationEntity.builder()
                 .analysisEntity(analysisEntity)
                 .jsonFilePath(jsonName)
-                .maskFilePath(maskName)
-                .drawFilePath(drawName)
                 .build();
     }
 

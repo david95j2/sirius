@@ -138,7 +138,9 @@ public class ShapeService {
         }
         propertyRepository.save(propertyEntity);
 
-        return new BaseResponse(ErrorCode.ACCEPTED, Integer.valueOf(modifiedNum)+"번 도형의 값이 변경되었습니다.");
+        shapeEntity.setPropertyEntity(propertyEntity);
+        return new BaseResponse(ErrorCode.ACCEPTED, shapeEntity.toDto());
+//        return new BaseResponse(ErrorCode.ACCEPTED, Integer.valueOf(modifiedNum)+"번 도형의 값이 변경되었습니다.");
     }
 
     @Transactional
@@ -157,7 +159,7 @@ public class ShapeService {
 
         switch (request.getShape()) {
             case "Rectangle":
-                checkNotNull(request.getRect_inward(), "rect_inward");
+                checkNotNull(request.getRectInward(), "rectInward");
                 checkNotNull(request.getRectCoeffsPoint1X(), "rectCoeffsPoint1X");
                 checkNotNull(request.getRectCoeffsPoint1Y(), "rectCoeffsPoint1Y");
                 checkNotNull(request.getRectCoeffsPoint2X(), "rectCoeffsPoint2X");
@@ -166,9 +168,9 @@ public class ShapeService {
                 checkNotNull(request.getRectCoeffsPoint3Y(), "rectCoeffsPoint3Y");
                 checkNotNull(request.getRectCoeffsPoint4X(), "rectCoeffsPoint4X");
                 checkNotNull(request.getRectCoeffsPoint4Y(), "rectCoeffsPoint4Y");
-                checkNotNull(request.getRect_coeffs_rot(), "rect_coeffs_rot");
+                checkNotNull(request.getRectCoeffsRot(), "rectCoeffsRot");
                 // Assign the values to the entity
-                propertyEntity.setRectInward(request.getRect_inward());
+                propertyEntity.setRectInward(request.getRectInward());
                 propertyEntity.setRectCoeffsPoint1X(request.getRectCoeffsPoint1X());
                 propertyEntity.setRectCoeffsPoint1Y(request.getRectCoeffsPoint1Y());
                 propertyEntity.setRectCoeffsPoint2X(request.getRectCoeffsPoint2X());
@@ -177,31 +179,31 @@ public class ShapeService {
                 propertyEntity.setRectCoeffsPoint3Y(request.getRectCoeffsPoint3Y());
                 propertyEntity.setRectCoeffsPoint4X(request.getRectCoeffsPoint4X());
                 propertyEntity.setRectCoeffsPoint4Y(request.getRectCoeffsPoint4Y());
-                propertyEntity.setRectCoeffsRot(request.getRect_coeffs_rot());
+                propertyEntity.setRectCoeffsRot(request.getRectCoeffsRot());
                 break;
             case "Line":
-                checkNotNull(request.getLine_auto(), "line_auto");
-                checkNotNull(request.getLine_direction(), "line_direction");
-                propertyEntity.setLineAuto(request.getLine_auto());
-                propertyEntity.setLineDirection(request.getLine_direction());
+                checkNotNull(request.getLineAuto(), "lineAuto");
+                checkNotNull(request.getLineDirection(), "lineDirection");
+                propertyEntity.setLineAuto(request.getLineAuto());
+                propertyEntity.setLineDirection(request.getLineDirection());
                 break;
             case "Circle":
-                checkNotNull(request.getCircle_inward(), "circle_inward");
-                checkNotNull(request.getCircle_start_angle(), "circle_start_angle");
-                checkNotNull(request.getCircle_coeffs_x(), "circle_coeffs_x");
-                checkNotNull(request.getCircle_coeffs_y(), "circle_coeffs_y");
-                checkNotNull(request.getCircle_coeffs_radius(), "circle_coeffs_radius");
-                propertyEntity.setCircleInward(request.getCircle_inward());
-                propertyEntity.setCircleStartAngle(request.getCircle_start_angle());
-                propertyEntity.setCircleCoeffsX(request.getCircle_coeffs_x());
-                propertyEntity.setCircleCoeffsY(request.getCircle_coeffs_y());
-                propertyEntity.setCircleCoeffsRadius(request.getCircle_coeffs_radius());
+                checkNotNull(request.getCircleInward(), "circleInward");
+                checkNotNull(request.getCircleStartAngle(), "circleStartAngle");
+                checkNotNull(request.getCircleCoeffsX(), "circleCoeffsX");
+                checkNotNull(request.getCircleCoeffsY(), "circleCoeffsY");
+                checkNotNull(request.getCircleCoeffsRadius(), "circleCoeffsRadius");
+                propertyEntity.setCircleInward(request.getCircleInward());
+                propertyEntity.setCircleStartAngle(request.getCircleStartAngle());
+                propertyEntity.setCircleCoeffsX(request.getCircleCoeffsX());
+                propertyEntity.setCircleCoeffsY(request.getCircleCoeffsY());
+                propertyEntity.setCircleCoeffsRadius(request.getCircleCoeffsRadius());
                 break;
             case "Underside":
-                checkNotNull(request.getBottom_auto(), "bottom_auto");
-                checkNotNull(request.getBottom_whole(), "bottom_whole");
-                propertyEntity.setBottomAuto(request.getBottom_auto());
-                propertyEntity.setBottomWhole(request.getBottom_whole());
+                checkNotNull(request.getBottomAuto(), "bottomAuto");
+                checkNotNull(request.getBottomWhole(), "bottomWhole");
+                propertyEntity.setBottomAuto(request.getBottomAuto());
+                propertyEntity.setBottomWhole(request.getBottomWhole());
                 break;
             case "Waypoints" : case "Merged Circle": case "Merged Rectangle": case "Abutment":
                 break;

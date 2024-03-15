@@ -30,6 +30,7 @@ public class FacilityEntity {
     private String name;
     private Float latitude;
     private Float longitude;
+    private String description;
 
     @JsonBackReference
     @ManyToOne
@@ -59,6 +60,7 @@ public class FacilityEntity {
                 .name(postFacilityReq.getName())
                 .latitude(postFacilityReq.getLatitude())
                 .longitude(postFacilityReq.getLongitude())
+                .description(postFacilityReq.getDescription())
                 .build();
     }
 
@@ -75,6 +77,7 @@ public class FacilityEntity {
         patchFacilityRes.setName(this.name);
         patchFacilityRes.setLatitude(this.latitude);
         patchFacilityRes.setLongitude(this.longitude);
+        patchFacilityRes.setDescription(this.description);
         return patchFacilityRes;
     }
 }

@@ -10,6 +10,7 @@ import com.example.sirius.exception.ErrorCode;
 import com.example.sirius.plan.MissionRepository;
 import com.example.sirius.plan.domain.MissionEntity;
 import com.example.sirius.utils.SiriusUtils;
+
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,11 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
@@ -28,16 +34,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.UnsupportedTemporalTypeException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -152,12 +160,21 @@ public class AlbumService {
         List<GetPictureRes> new_results = results.stream().map(PictureEntity::toDto).collect(Collectors.toList());
 
         new_results.stream().forEach(x -> {
-            String fileName = FilenameUtils.removeExtension(x.getFileName())+".png";
+//            String fileName = FilenameUtils.removeExtension(x.getFileName())+".png"; // origin
+            File origin_file = new File(x.getFileName());
+            String fileName = FilenameUtils.removeExtension(origin_file.getName());
 
             List<SegmentationEntity> iscracked = segmentationRepository.findPartByFileName(fileName);
-            if (iscracked.size() != 0) {
-                x.setCrack(true);
-            }
+
+            iscracked.stream().forEach(y -> {
+                File file = new File(y.getJsonFilePath());
+                String jsonName = file.getName();
+                if (jsonName.endsWith("_0.json")) {
+                    x.setCrack(false);
+                } else {
+                    x.setCrack(true);
+                }
+            });
 
         });
         return new BaseResponse(ErrorCode.SUCCESS, new_results);
@@ -170,7 +187,9 @@ public class AlbumService {
         return SiriusUtils.loadFileAsResource(Paths.get(pictureEntity.getFilePath()).getParent().toString(),
                 Paths.get(pictureEntity.getFilePath()).getFileName().toString());
     }
-
+    
+    
+    // 파일 이름을 파싱해서
     private BaseResponse handleFile(MultipartFile file, Integer missionId, Function<InputStream, ArchiveInputStream> streamCreator) {
         MissionEntity missionEntity = missionRepository.findById(missionId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
@@ -191,6 +210,7 @@ public class AlbumService {
                 if (isFirstEntry) {
                     String temp_folder_name = FilenameUtils.removeExtension(imageEntry.getName());
                     root_path = root_path + File.separator + temp_folder_name.split("_")[0] + File.separator + "origin";
+                    log.info(root_path);
                     SiriusUtils.makeFolder(new File(root_path));
 
                     // albums DB insert
@@ -211,7 +231,9 @@ public class AlbumService {
                 Float posZ = Float.valueOf(fileInfo[4]);
 
                 double[] euler = SiriusUtils.quaternionToEuler(Float.valueOf(fileInfo[5]), Float.valueOf(fileInfo[6]), Float.valueOf(fileInfo[7]), Float.valueOf(fileInfo[8]));
+                System.out.println(create_albumEntity.getId());
                 PictureEntity pictureEntity = PictureEntity.from(root_path+File.separator+imageEntry.getName(), fileInfo[0], fileInfo[1], posX, posY, posZ, euler[0], euler[1], euler[2], create_albumEntity);
+                System.out.println(pictureEntity.getAlbumEntity().getId());
                 pictureRepository.save(pictureEntity);
             }
         } catch (IOException e) {
@@ -220,6 +242,85 @@ public class AlbumService {
 
         return new BaseResponse(ErrorCode.CREATED, albumId);
     }
+
+//    // csv 받아서 작업
+//    private BaseResponse handleFile(MultipartFile file, Integer missionId, Function<InputStream, ArchiveInputStream> streamCreator) {
+//        MissionEntity missionEntity = missionRepository.findById(missionId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
+//
+//        boolean isFirstEntry = true;
+//        Integer albumId = null;
+//
+//        Date now = new Date();
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HHmmss");
+//        String formattedDate = sdf.format(now);
+//
+//        String folder_path = Paths.get(missionEntity.getMapGroupEntity().getMapEntities().get(0).getMapPath()).getParent().toString().replace("pcd", "inspection_images");
+//        folder_path = Paths.get(folder_path, formattedDate.split(" ")[0], "origin").toString();
+//
+//        try (ArchiveInputStream imageStream = streamCreator.apply(file.getInputStream())) {
+//            ArchiveEntry imageEntry;
+//            AlbumEntity albumEntity;
+//            AlbumEntity create_albumEntity = null;
+//            while ((imageEntry = imageStream.getNextEntry()) != null) {
+//
+//                if (imageEntry.isDirectory()) {
+//                    throw new AppException(ErrorCode.ZIP_NOT_ALLOWED);
+//                }
+//
+//                if (isFirstEntry) {
+//                    SiriusUtils.makeFolder(new File(folder_path));
+//
+//                    // albums DB insert
+//                    albumEntity = AlbumEntity.from(formattedDate, missionEntity);
+//                    create_albumEntity = albumRepository.save(albumEntity);
+//                    albumId = create_albumEntity.getId();
+//                    isFirstEntry = false;
+//                }
+//
+//                if (!imageEntry.getName().equals("info.csv")) {
+//                    File extractedImage = new File(folder_path, imageEntry.getName());
+//                    SiriusUtils.saveImageToFile(imageStream, extractedImage);
+//                } else {
+//                    // info.csv 파일 직접 저장
+//                    File csvFile = new File(folder_path, imageEntry.getName());
+//                    try (FileOutputStream out = new FileOutputStream(csvFile)) {
+//                        IOUtils.copy(imageStream, out);
+//                    }
+//
+//                    // 임시 CSV 파일 처리
+//                    try (FileReader fileReader = new FileReader(csvFile);
+//                         CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(fileReader)) {
+//
+//                        for (CSVRecord record : csvParser) {
+//                            GetPictureRes pictureData = new GetPictureRes();
+//                            pictureData.setFileName(String.valueOf(Paths.get(folder_path, record.get("FileName"))));
+//                            pictureData.setPosX(Float.parseFloat(record.get("x")));
+//                            pictureData.setPosY(Float.parseFloat(record.get("y")));
+//                            pictureData.setPosZ(Float.parseFloat(record.get("z")));
+//                            pictureData.setRoll(Float.parseFloat(record.get("roll")));
+//                            pictureData.setPitch(Float.parseFloat(record.get("pitch")));
+//                            pictureData.setYaw(Float.parseFloat(record.get("yaw")));
+//                            // 추가적으로 date, time 필드 처리가 필요하다면 여기에 로직 추가
+//                            PictureEntity pictureEntity = PictureEntity.from(pictureData, create_albumEntity);
+//                            pictureRepository.save(pictureEntity);
+//                        }
+//                    } catch (FileNotFoundException e) {
+//                        e.printStackTrace();
+//                        throw new RuntimeException("Failed to open the saved CSV file. 1 : ", e);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        throw new RuntimeException("Failed to read the saved CSV file. 2 : ", e);
+//                    }
+//                }
+////                System.out.println(imageEntry.getName());
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        return new BaseResponse(ErrorCode.CREATED, albumId);
+//    }
+
 
     public BaseResponse unZip(MultipartFile compressedFile, Integer missionId) {
         return handleFile(compressedFile, missionId, ZipArchiveInputStream::new);
@@ -233,10 +334,10 @@ public class AlbumService {
     @Transactional
     public BaseResponse deletePicture(Integer pictureId) {
         // 분석결과 있으면 지우기
-        PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(()-> new AppException(ErrorCode.DATA_NOT_FOUND));
+        PictureEntity pictureEntity = pictureRepository.findById(pictureId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
 
-        String file_name = Paths.get(pictureEntity.getFilePath()).toString().replace(".JPG",".png");
-        file_name = file_name.replace("origin","result/drawImage");
+        String file_name = Paths.get(pictureEntity.getFilePath()).toString().replace(".JPG", ".png");
+        file_name = file_name.replace("origin", "result/drawImage");
 
         // 분석 결과 지우기
         segmentationRepository.deleteByFileName(file_name);
@@ -244,15 +345,15 @@ public class AlbumService {
         // 사진 지우기
         pictureRepository.delete(pictureEntity);
 
-        return new BaseResponse(ErrorCode.SUCCESS,Integer.valueOf(pictureId)+"번 사진이 삭제되었습니다.");
+        return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(pictureId) + "번 사진이 삭제되었습니다.");
     }
 
     public String getAlbumPathById(Integer album_id) {
         albumRepository.findById(album_id).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         Pageable topOne = PageRequest.of(0, 1);
-        List<String> albumlist = albumRepository.findAlbumPathById(album_id,topOne);
+        List<String> albumlist = albumRepository.findAlbumPathById(album_id, topOne);
         String albumPath = albumlist.isEmpty() ? null : albumlist.get(0);
-        if (albumPath == null){
+        if (albumPath == null) {
             new AppException(ErrorCode.INTERNAL_DB_ERROR);
         }
         return Paths.get(albumPath).getParent().toString();

@@ -48,6 +48,8 @@ public enum ErrorCode {
      * 405 METHOD_NOT_ALLOWED: 허용되지 않은 Request Method 호출
      */
     ZIP_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,"Folders are not allowed inside the zip."),
+
+    EXPECTED_CSV_FIRST(HttpStatus.METHOD_NOT_ALLOWED,"zip 파일의 첫번째 파일은 info.csv 여야한다."),
     TARTGZ_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,"Folders are not allowed inside the tar/tgz."),
     INVALID_FILENAME(HttpStatus.METHOD_NOT_ALLOWED,"파일명은 mission id 여야 합니다."),
     DATA_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,"Only ZIP, TAR, and TGZ files are allowed"),

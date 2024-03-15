@@ -71,14 +71,6 @@ public class AlbumController {
 
             // 파일 이름 (확장자 제외) 검사
             String originalFilename = file.getOriginalFilename().toLowerCase();
-            String baseFilename = originalFilename.contains(".") ?
-                    originalFilename.substring(0, originalFilename.lastIndexOf(".")) :
-                    originalFilename;
-
-//            if (!baseFilename.matches("^[1-9][0-9]*$")) {
-//                throw new AppException(ErrorCode.INVALID_FILENAME);
-//            }
-//            missionService.getMissionOnlyId(Integer.valueOf(baseFilename));
 
             if (originalFilename.endsWith(".zip") || contentType.equalsIgnoreCase("application/zip")) {
                 return albumService.unZip(file, mission_id); // Assume zipService is the service that handles .zip files

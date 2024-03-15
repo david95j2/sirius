@@ -52,15 +52,15 @@ public class ShapeEntity {
                 .missionEntity(missionEntity)
                 .shape(postShapeAndPropertyReq.getShape())
                 .seq(postShapeAndPropertyReq.getSeq())
-                .groupNum(postShapeAndPropertyReq.getGroup_num())
-                .fromWall(postShapeAndPropertyReq.getFrom_wall())
-                .intervalValue(postShapeAndPropertyReq.getInterval_value())
-                .circleRotate(postShapeAndPropertyReq.getCircle_rotate())
-                .rectRotate(postShapeAndPropertyReq.getRect_rotate())
+                .groupNum(postShapeAndPropertyReq.getGroupNum())
+                .fromWall(postShapeAndPropertyReq.getFromWall())
+                .intervalValue(postShapeAndPropertyReq.getIntervalValue())
+                .circleRotate(postShapeAndPropertyReq.getCircleRotate())
+                .rectRotate(postShapeAndPropertyReq.getRectRotate())
                 .checked(postShapeAndPropertyReq.getChecked())
-                .heightInterval(postShapeAndPropertyReq.getHeight_interval())
-                .lowerHeight(postShapeAndPropertyReq.getLower_height())
-                .upperHegiht(postShapeAndPropertyReq.getUpper_height())
+                .heightInterval(postShapeAndPropertyReq.getHeightInterval())
+                .lowerHeight(postShapeAndPropertyReq.getLowerHeight())
+                .upperHegiht(postShapeAndPropertyReq.getUpperHeight())
                 .build();
     }
 
@@ -69,15 +69,15 @@ public class ShapeEntity {
         getShapeRes.setId(this.id);
         getShapeRes.setSeq(this.seq);
         getShapeRes.setShape(this.shape);
-        getShapeRes.setGroup_num(this.groupNum);
-        getShapeRes.setFrom_wall(this.fromWall);
-        getShapeRes.setInterval_value(this.intervalValue);
-        getShapeRes.setCircle_rotate(this.circleRotate);
-        getShapeRes.setRect_rotate(this.rectRotate);
+        getShapeRes.setGroupNum(this.groupNum);
+        getShapeRes.setFromWall(this.fromWall);
+        getShapeRes.setIntervalValue(this.intervalValue);
+        getShapeRes.setCircleRotate(this.circleRotate);
+        getShapeRes.setRectRotate(this.rectRotate);
         getShapeRes.setChecked(this.checked);
-        getShapeRes.setHeight_interval(this.heightInterval);
-        getShapeRes.setUpper_height(this.upperHegiht);
-        getShapeRes.setLower_height(this.lowerHeight);
+        getShapeRes.setHeightInterval(this.heightInterval);
+        getShapeRes.setUpperHeight(this.upperHegiht);
+        getShapeRes.setLowerHeight(this.lowerHeight);
 
         if (this.shape.equals("Line")) {
             getShapeRes.setPropertyDto(this.propertyEntity.toLineDto());

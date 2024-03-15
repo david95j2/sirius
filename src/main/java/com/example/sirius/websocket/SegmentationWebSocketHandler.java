@@ -85,7 +85,7 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
 
         String secondScriptPath = "/home/sb/workspace/calc_dis/build/calcDistance";
         MapEntity mapEntity = mapRepository.findByAlbumIdAndFileName(albumEntity.getId(),"GlobalMap.pcd").orElse(null);
-        List<String> secondArgs = Arrays.asList(Paths.get(pictureEntity.getFilePath()).getParent().toString().replace("/origin",""), mapEntity.getMapPath());
+        List<String> secondArgs = Arrays.asList("0",Paths.get(pictureEntity.getFilePath()).getParent().toString().replace("/origin",""), mapEntity.getMapPath());
         SiriusUtils.executePythonScript(null, secondScriptPath, secondArgs, secondScriptPath.split("/")[secondScriptPath.split("/").length - 1], null);
         long endTimeFifth = System.nanoTime();
         long timeElapsedFifth = endTimeFifth - startTimeFifth;
@@ -135,10 +135,10 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
                 e.printStackTrace();
             }
 
-            String drawName = originPath.replace("origin","result/drawImage/")+originName+".png";
-            String maskName = originPath.replace("origin","result/maskImage/")+originName+".png";
+//            String drawName = originPath.replace("origin","result/drawImage/")+originName+".png";
+//            String maskName = originPath.replace("origin","result/maskImage/")+originName+".png";
 
-            SegmentationEntity segmentationEntity = SegmentationEntity.from(jsonName,drawName,maskName,final_analysisEntity);
+            SegmentationEntity segmentationEntity = SegmentationEntity.from(jsonName,final_analysisEntity);
             segmentationRepository.save(segmentationEntity);
 
             return null;

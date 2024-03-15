@@ -18,6 +18,6 @@ public class GetWaypointRes {
     private Boolean completed;
     private Integer group_num;
     private Integer pitch;
-    private String gimbal_pitch_array;
+    private List<Integer> gimbal_pitch_array;
     private Boolean camera_on;
 }

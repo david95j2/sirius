@@ -10,8 +10,11 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -51,5 +54,10 @@ public class FacilityController {
     public ResponseEntity<InputStreamResource> getLocationThumbnail(@PathVariable("login_id") String login_id, @PathVariable("facility_id") Integer facility_id) throws IOException {
         Resource file = mapService.getLocationThumbnail(facility_id);
         return SiriusUtils.getFile(file, true, false);
+    }
+
+    @PostMapping("api/users/facilities/{facility_id}/thumbnails/upload")
+    public BaseResponse postLocationThumbnail(@PathVariable Integer facility_id, @RequestParam("files") MultipartFile file) {
+        return facilityService.postLocationThumbnail(file, facility_id);
     }
 }

@@ -8,15 +8,15 @@ import lombok.Setter;
 public class GetShapeRes {
     private Integer id;
     private Integer seq;
-    private Integer group_num;
+    private Integer groupNum;
     private String shape;
-    private Float from_wall;
-    private Float interval_value;
-    private Float circle_rotate;
-    private Float rect_rotate;
+    private Float fromWall;
+    private Float intervalValue;
+    private Float circleRotate;
+    private Float rectRotate;
     private Boolean checked;
-    private Float height_interval;
-    private Float lower_height;
-    private Float upper_height;
+    private Float heightInterval;
+    private Float lowerHeight;
+    private Float upperHeight;
     private PropertyDto propertyDto;
 }

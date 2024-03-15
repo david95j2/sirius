@@ -80,7 +80,13 @@ public class WaypointEntity {
         getWaypointRes.setCompleted(this.completed);
         getWaypointRes.setGroup_num(this.groupNum);
         getWaypointRes.setPitch(this.pitch);
-        getWaypointRes.setGimbal_pitch_array(this.gimbalPitchArray);
+
+        String temp_gimbalPitchArray = this.gimbalPitchArray.replaceAll("\\[|\\]", "");
+        getWaypointRes.setGimbal_pitch_array(Arrays.stream(temp_gimbalPitchArray.split(","))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList()));
+
         getWaypointRes.setCamera_on(this.cameraOn);
         return getWaypointRes;
     }

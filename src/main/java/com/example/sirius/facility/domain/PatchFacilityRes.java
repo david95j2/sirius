@@ -10,4 +10,5 @@ public class PatchFacilityRes {
     private String name;
     private Float latitude;
     private Float longitude;
+    private String description;
 }

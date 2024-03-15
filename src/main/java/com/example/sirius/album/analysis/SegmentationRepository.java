@@ -35,10 +35,15 @@ public interface SegmentationRepository extends JpaRepository<SegmentationEntity
     @Query("select s from SegmentationEntity s where s.drawFilePath=:originFileName")
     Optional<SegmentationEntity> findByFileName(@Param("originFileName") String originFileName);
 
-    @Query("select s from SegmentationEntity s where s.drawFilePath like %:originFileName%")
+//    @Query("select s from SegmentationEntity s where s.drawFilePath like %:originFileName%") // origin
+    @Query("select s from SegmentationEntity s where s.jsonFilePath like %:originFileName%")
     List<SegmentationEntity> findPartByFileName(@Param("originFileName") String originFileName);
 
-    // tesmp
-    @Query("select s from SegmentationEntity s where s.drawFilePath=:originFileName")
+    // temp
+    @Query("select s from SegmentationEntity s where s.jsonFilePath=:originFileName")
     List<SegmentationEntity> findByFileNameList(@Param("originFileName") String originFileName);
+
+    // 20240316
+    @Query("SELECT s FROM SegmentationEntity s WHERE s.jsonFilePath LIKE %:pattern%")
+    List<SegmentationEntity> findBySimilarPathPattern(@Param("pattern") String pattern);
 }
