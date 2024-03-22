@@ -206,7 +206,7 @@ public class SiriusUtils {
         StringBuilder output = new StringBuilder();
         try {
             Process process = processBuilder.start();
-            if (type.equals("modifier.py")) {
+            if (type.equals("calcDistance")) {
                 String line;
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     while ((line = reader.readLine()) != null) {

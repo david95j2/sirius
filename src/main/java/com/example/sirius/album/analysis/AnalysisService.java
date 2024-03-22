@@ -20,7 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -135,7 +135,7 @@ public class AnalysisService {
 
         String pattern = createSearchPattern(pictureEntity.getFilePath());
 //        SegmentationEntity segmentationEntity = segmentationRepository.findByFileName(origin_file_name).orElse(null); // origin
-        System.out.println(pattern);
+//        System.out.println(pattern);
         List<SegmentationEntity> results = segmentationRepository.findBySimilarPathPattern(pattern);
         SegmentationEntity segmentationEntity = results.get(0);
         if (segmentationEntity == null) {
@@ -180,24 +180,76 @@ public class AnalysisService {
         SiriusUtils.saveFile(jsonFileName, jsonModel);
 
         // c++ 분석
-        ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
-        localExecutorService.execute(() -> {
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command("/home/sb/workspace/calc_dis/build/calcDistance",
-                    String.valueOf(1),
-                    pictureEntity.getFilePath(),
-                    mapEntity.getMapPath()
-                    );
+//        ExecutorService localExecutorService = Executors.newSingleThreadExecutor();
+//        localExecutorService.execute(() -> {
+//
+//            ProcessBuilder processBuilder = new ProcessBuilder();
+//            processBuilder.command("/home/sb/workspace/calc_dis/build/calcDistance",
+//                    String.valueOf(1),
+//                    pictureEntity.getFilePath(),
+//                    mapEntity.getMapPath()
+//                    );
+//
+//            try {
+//                Process process = processBuilder.start();
+//                int exitCode = process.waitFor();
+//                log.info("[calcDistance Program Modify] Exited with code: " + exitCode);
+//
+//            } catch (IOException | InterruptedException e) {
+//                log.error("[calcDistance Program Modify] Error occurred while executing external process",e);
+//            }
+//        });
+//        localExecutorService.shutdown();
 
-            try {
-                Process process = processBuilder.start();
-                int exitCode = process.waitFor();
-                log.info("[calcDistan Program Modify] Exited with code: " + exitCode);
 
-            } catch (IOException | InterruptedException e) {
-                log.error("[calcDistan Program Modify] Error occurred while executing external process",e);
-            }
-        });
-        localExecutorService.shutdown();
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("/home/sb/workspace/calc_dis/build/calcDistance",
+                "1",
+                pictureEntity.getFilePath(),
+                mapEntity.getMapPath()
+        );
+
+        log.info("Executing command: " + String.join(" ", processBuilder.command()));
+
+        try {
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+            log.info("[calcDistance Program Modify] Exited with code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            log.error("[calcDistance Program Modify] Error occurred while executing external process",e);
+        }
+
+        int indexJson = jsonFileName.lastIndexOf(".json");
+        String filePattern = Paths.get(jsonFileName.substring(0, indexJson)).getFileName().toString();
+        int lastIndex = filePattern.lastIndexOf("_", indexJson);
+        filePattern = filePattern.substring(0, lastIndex).replaceAll("\\\\","/")+"_*.json";
+
+
+        List<String> fileList = findFilesWithPattern(Paths.get(jsonFileName).getParent().toString(), filePattern);
+        for (String filename : fileList) {
+            System.out.println("update file: " + filename);
+            segmentationEntity.setJsonFilePath(filename);
+            segmentationRepository.save(segmentationEntity);
+        }
+
     }
+
+    private static List<String> findFilesWithPattern(String directoryPath, String globPattern) {
+        List<String> matchingFileNames = new ArrayList<>();
+        PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:" + globPattern);
+
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directoryPath))) {
+            for (Path path : directoryStream) {
+                if (pathMatcher.matches(path.getFileName())) {
+                    matchingFileNames.add(path.toString()); // 파일 전체 경로 대신 파일 이름만 추가
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return matchingFileNames;
+    }
+
 }

@@ -69,7 +69,8 @@ public class AnalysisController {
     // Web GCS로부터 json 받아서 기존 json 위치에 저장
     @PostMapping("api/report/maps/missions/albums/analyses/segmentations/{picture_id}/files/json")
     public ResponseEntity<?> modifySegmentation(@PathVariable Integer picture_id,
-                                           @Valid @RequestBody ArrayList<JsonModel> jsonModel) {
+                                           @Valid @RequestBody ArrayList<JsonModel> jsonModel) throws IOException {
+
         analysisService.modifySegmentation(jsonModel,picture_id);
         return ResponseEntity.ok().body("Success");
     }

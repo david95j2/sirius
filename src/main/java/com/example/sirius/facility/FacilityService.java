@@ -152,7 +152,8 @@ public class FacilityService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String formattedDate = sdf.format(now);
         String url = facilityEntity.getUserEntity().getLoginId() + "/" + SiriusUtils.stringToUnicode(facilityEntity.getName()).replace("\\","") + "/" + formattedDate.split("_")[0] + "/" + formattedDate.split("_")[1]+"/pcd/samples";
-        String os_path = Paths.get("/hdd_ext/part6", "sirius",url).toString();
+        String os_path = Paths.get("/hdd_ext/part8", "sirius",url).toString();
+        //        String os_path = Paths.get("/hdd_ext/part6", "sirius",url).toString();
 
         SiriusUtils.saveResizedImage(file, os_path, 320, 200);
         PostThumbnails postThumbnails = new PostThumbnails();

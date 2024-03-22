@@ -75,7 +75,7 @@ public class AlbumService {
         AlbumEntity albumEntity = albumRepository.findByIdAndMissionId(albumId, missionId).orElseThrow(() -> new AppException(ErrorCode.DATA_NOT_FOUND));
         // 총 사진 개수
         Integer total_image_count = pictureRepository.findTotalCountByAlbumId(albumId);
-
+        System.out.println(total_image_count);
         // 총 균열 개수
         AtomicInteger total_crack_count = new AtomicInteger(0);
         List<SegmentationEntity> results = segmentationRepository.findSegAllByAlbumId(albumId);
@@ -209,8 +209,9 @@ public class AlbumService {
 
                 if (isFirstEntry) {
                     String temp_folder_name = FilenameUtils.removeExtension(imageEntry.getName());
-                    root_path = root_path + File.separator + temp_folder_name.split("_")[0] + File.separator + "origin";
-                    log.info(root_path);
+//                    root_path = root_path + File.separator + temp_folder_name.split("_")[0] + File.separator + "origin";
+                    root_path = root_path + File.separator + temp_folder_name.split("_")[0]+ temp_folder_name.split("_")[1] + File.separator + "origin";
+                    // log.info(root_path);
                     SiriusUtils.makeFolder(new File(root_path));
 
                     // albums DB insert
@@ -230,10 +231,10 @@ public class AlbumService {
                 Float posY = Float.valueOf(fileInfo[3]);
                 Float posZ = Float.valueOf(fileInfo[4]);
 
-                double[] euler = SiriusUtils.quaternionToEuler(Float.valueOf(fileInfo[5]), Float.valueOf(fileInfo[6]), Float.valueOf(fileInfo[7]), Float.valueOf(fileInfo[8]));
-                System.out.println(create_albumEntity.getId());
-                PictureEntity pictureEntity = PictureEntity.from(root_path+File.separator+imageEntry.getName(), fileInfo[0], fileInfo[1], posX, posY, posZ, euler[0], euler[1], euler[2], create_albumEntity);
-                System.out.println(pictureEntity.getAlbumEntity().getId());
+//                double[] euler = SiriusUtils.quaternionToEuler(Float.valueOf(fileInfo[5]), Float.valueOf(fileInfo[6]), Float.valueOf(fileInfo[7]), Float.valueOf(fileInfo[8]));
+                // System.out.println(create_albumEntity.getId());
+                PictureEntity pictureEntity = PictureEntity.from(root_path+File.separator+imageEntry.getName(), fileInfo[0], fileInfo[1], posX, posY, posZ, Double.valueOf(fileInfo[5]), Double.valueOf(fileInfo[6]), Double.valueOf(fileInfo[7]), create_albumEntity);
+                // System.out.println(pictureEntity.getAlbumEntity().getId());
                 pictureRepository.save(pictureEntity);
             }
         } catch (IOException e) {

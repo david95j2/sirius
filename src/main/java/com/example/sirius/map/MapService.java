@@ -132,10 +132,13 @@ public class MapService {
 
         // 맵 있으면 지우기
         mapRepository.deleteAllByMapGroupId(mapGroupEntity.getId());
+
         // 미션있으면 지우기
         missionService.deleteMissionByMapGroupId(mapGroupEntity.getId());
+
         // 맵 그룹있으면 지우기
         mapGroupRepository.delete(mapGroupEntity);
+
         return new BaseResponse(ErrorCode.SUCCESS, Integer.valueOf(mapId)+"번 맵이 삭제되었습니다.");
     }
 

@@ -59,7 +59,8 @@ public class FtpService {
 
     public BaseResponse postMapURLSuccess(PostMapURLSuccess postMapURLSuccess, String loginId) {
         /* 사용자가 제공한 정보와 실제 파일이 있는지 검사 */
-        String os_path = Paths.get("/hdd_ext/part6", "sirius").toString();
+        String os_path = Paths.get("/hdd_ext/part8", "sirius").toString();
+//        String os_path = Paths.get("/hdd_ext/part6", "sirius").toString();
         Path root_path = Paths.get(os_path, loginId, SiriusUtils.stringToUnicode(postMapURLSuccess.getLocation()).replace("\\",""),
                 postMapURLSuccess.getRegdate().split("_")[0],
                 postMapURLSuccess.getRegdate().split("_")[1], "pcd");
@@ -149,7 +150,8 @@ public class FtpService {
         Date now = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String formattedDate = sdf.format(now);
-        String url = loginId + "/" + SiriusUtils.stringToUnicode(facilityEntity.getLocation()).replace("\\","") + "/" + formattedDate.split("_")[0] + "/" + formattedDate.split("_")[1]+"/pcd";
+        String url = loginId + "/" + SiriusUtils.stringToUnicode(facilityEntity.getName()).replace("\\","") + "/" + formattedDate.split("_")[0] + "/" + formattedDate.split("_")[1]+"/pcd";
+
         FtpInfo ftpInfo = getFTPInfo();
         ftpInfo.setUrl(url);
         return new BaseResponse(ErrorCode.SUCCESS, ftpInfo);
@@ -167,41 +169,44 @@ public class FtpService {
     public BaseResponse postURLForUploadSuccess(FtpInfo ftpInfo, Integer facilityId, String loginId) {
         /* 사용자가 제공한 정보와 실제 파일이 있는지 검사 */
         String[] urlInfo = ftpInfo.getUrl().split("/");
-
-
-        String os_path = Paths.get("/hdd_ext/part6", "sirius").toString();
-        Path root_path = Paths.get(os_path, loginId, urlInfo[2],
-                urlInfo[3], urlInfo[4], "pcd");
+        String os_path = Paths.get("/hdd_ext/part8", "sirius").toString();
+//        String os_path = Paths.get("/hdd_ext/part6", "sirius").toString();
+        Path root_path = Paths.get(os_path, loginId, urlInfo[1],
+                urlInfo[2], urlInfo[3], "pcd");
 
         Integer map_num = 0;
         // map 파일 3개 있는지 확인(SurfMap, CornerMap, GlobalMap)
         File folder = new File(root_path.toString());
         if (folder.isDirectory()) {
+
             File[] files = folder.listFiles();
             List<String> fileNameList = Arrays.asList("GlobalMap.pcd", "CornerMap.pcd", "SurfMap.pcd");
             Boolean postGroup = true;
             Integer mapGroupId = null;
 
             // map 뒤져서 해당 날짜에 있는지 확인하고 없으면 map_group 생성
-            Boolean exist = mapService.getMapsByLocationIdAndDate(facilityId, urlInfo[3]+"_"+urlInfo[4]);
+            Boolean exist = mapService.getMapsByLocationIdAndDate(facilityId, urlInfo[2]+"_"+urlInfo[3]);
 
             for (File file : files) {
                 if (!file.isDirectory() && fileNameList.contains(file.getName())) {
                     /* map_groups & maps post */
                     if (exist) {
                         // 해당날짜에 이미 맵이 있다...?
+
                         throw new AppException(ErrorCode.DUPLICATED_MAP_DATA);
                     } else { // 해당날짜는 처음 들어온 값이다.
                         if (postGroup) {
+
                             // map_groups 생성
                             mapGroupId = mapService.postMapGroup(facilityId);
                             postGroup = false;
                         }
+
                         // maps 생성
                         PostMapReq postMapReq = new PostMapReq();
                         postMapReq.setFile_path(file.getPath());
-                        postMapReq.setDate(LocalDate.parse(urlInfo[3], DateTimeFormatter.ofPattern("yyyyMMdd")));
-                        postMapReq.setTime(LocalTime.parse(urlInfo[4], DateTimeFormatter.ofPattern("HHmmss")));
+                        postMapReq.setDate(LocalDate.parse(urlInfo[2], DateTimeFormatter.ofPattern("yyyyMMdd")));
+                        postMapReq.setTime(LocalTime.parse(urlInfo[3], DateTimeFormatter.ofPattern("HHmmss")));
 
                         mapService.postMaps(postMapReq, mapGroupId, facilityId);
                         map_num = map_num + 1;
@@ -209,6 +214,7 @@ public class FtpService {
                 }
             }
         }
+        System.out.println("5555555555555555");
 
         return new BaseResponse(ErrorCode.CREATED,Integer.valueOf(map_num)+"개의 맵파일을 생성하였습니다.");
 

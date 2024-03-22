@@ -66,19 +66,30 @@ public class SegmentationWebSocketHandler extends AbstractWebSocketHandler {
             analysisRepository.save(already_analysisEntity);
         }
 
+        long startTimeSec = System.nanoTime();
+        // mmsegmentaiton
+        // multi gpu inference
         String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/torchrun";
         String gpuNum = "--nproc_per_node=6";
 
-        // Run mmseg
-        long startTimeSec = System.nanoTime();
         String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg.py";
         List<String> args = Arrays.asList("--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py", "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
                 "--srx_dir", Paths.get(pictureEntity.getFilePath()).getParent().toString(), "--srx_suffix", "."+FilenameUtils.getExtension(pictureEntity.getFilePath()));
         SiriusUtils.executePythonScript(pythonPath, scriptPath, args, "mmseg", gpuNum);
-        long endTimeSec = System.nanoTime();
+        // multi gpu inference
 
+        // single gpu inference
+//        String pythonPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/venv_seg/bin/python3";
+//        String scriptPath = "/home/sb/Desktop/vsc/0926koceti/20230901_mmsegmentation/inferences/inference_and_quantification_mmseg_single.py";
+//        List<String> args = Arrays.asList("--config", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/convnext_tiny_fpn_crack.py", "--checkpoint", "/home/sb/Desktop/vsc/0926koceti/20230901_crack/iter_32000.pth",
+//                "--srx_dir", Paths.get(pictureEntity.getFilePath()).getParent().toString(), "--srx_suffix", "."+FilenameUtils.getExtension(pictureEntity.getFilePath()));
+//        SiriusUtils.executePythonScript(pythonPath, scriptPath, args, "mmseg", null);
+        // single gpu inference
+
+        long endTimeSec = System.nanoTime();
         long timeElapsedSec = endTimeSec - startTimeSec;
         double timeInSecondSec = (double)timeElapsedSec / 1_000_000_000;
+        System.out.println("python inference 실행 시간 : "+timeInSecondSec + "초");
 
         // Run Calculate Distance
         long startTimeFifth = System.nanoTime();
